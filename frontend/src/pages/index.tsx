@@ -78,8 +78,8 @@ export default function Home() {
       if (result.data) {
         setUser(result.data);
         setIsAuthenticated(true);
-        // Optionally sync on login check
-        syncFromServer();
+        // Don't auto-sync on page load - let user choose when to sync
+        // syncFromServer();
       }
     } catch (error) {
       // Not authenticated, continue with localStorage
