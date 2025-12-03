@@ -47,3 +47,4 @@ def authenticated_client(api_client, user):
     return api_client
 
 
+
