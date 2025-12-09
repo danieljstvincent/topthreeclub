@@ -39,7 +39,7 @@ export default function Signup() {
   return (
     <>
       <Head>
-        <title>Sign Up - TopThree</title>
+        <title>Sign Up - 3 Top Three Club</title>
       </Head>
 
       <div className="min-h-screen bg-gray-50 flex flex-col">

@@ -40,7 +40,7 @@ export default function Settings() {
   return (
     <>
       <Head>
-        <title>Settings - TopThree</title>
+        <title>Settings - 3 Top Three Club</title>
       </Head>
 
       <div className="min-h-screen bg-gray-50 flex flex-col">

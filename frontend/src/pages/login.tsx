@@ -31,7 +31,7 @@ export default function Login() {
   return (
     <>
       <Head>
-        <title>Sign In - TopThree</title>
+        <title>Sign In - 3 Top Three Club</title>
       </Head>
 
       <div className="min-h-screen bg-gray-50 flex flex-col">

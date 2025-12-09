@@ -266,7 +266,7 @@ export default function Dashboard() {
   return (
     <>
       <Head>
-        <title>Dashboard - TopThree</title>
+        <title>Dashboard - 3 Top Three Club</title>
       </Head>
 
       <div className="min-h-screen bg-gray-50">
