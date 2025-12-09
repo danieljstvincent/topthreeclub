@@ -10,7 +10,7 @@ export default function Footer() {
               <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-primary-700 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">3</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">TopThree</span>
+              <span className="text-lg font-semibold text-gray-900">Top Three Club</span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">
               Build better habits, one day at a time.
@@ -79,7 +79,7 @@ export default function Footer() {
         <div className="pt-8 border-t border-gray-100">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-400">
-              © {new Date().getFullYear()} TopThree. All rights reserved.
+              © {new Date().getFullYear()} 3 Top Three Club. All rights reserved.
             </p>
             <p className="text-sm text-gray-400">
               Engineered by{' '}

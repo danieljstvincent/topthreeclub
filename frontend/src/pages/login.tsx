@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
-import { apiClient } from '../lib/api';
+import { apiClient } from '@/lib/api';
 
 export default function Login() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function Login() {
   return (
     <>
       <Head>
-        <title>Sign In - TopThree</title>
+        <title>Sign In - 3 Top Three Club</title>
       </Head>
 
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -108,6 +108,9 @@ export default function Login() {
     </>
   );
 }
+
+
+
 
 
 

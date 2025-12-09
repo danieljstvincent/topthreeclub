@@ -7,7 +7,7 @@ export default function Landing() {
   return (
     <>
       <Head>
-        <title>TopThree - Build Better Habits, One Day at a Time</title>
+        <title>3 Top Three Club - Build Better Habits, One Day at a Time</title>
         <meta name="description" content="Track your top three daily goals and build lasting habits. Simple, beautiful, and effective habit tracking." />
       </Head>
 
@@ -128,6 +128,9 @@ export default function Landing() {
     </>
   );
 }
+
+
+
 
 
 

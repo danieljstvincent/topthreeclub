@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
-import { apiClient } from '../lib/api';
+import { apiClient } from '@/lib/api';
 
 interface User {
   id: number;
@@ -266,7 +266,7 @@ export default function Dashboard() {
   return (
     <>
       <Head>
-        <title>Dashboard - TopThree</title>
+        <title>Dashboard - 3 Top Three Club</title>
       </Head>
 
       <div className="min-h-screen bg-gray-50">
@@ -398,6 +398,9 @@ export default function Dashboard() {
     </>
   );
 }
+
+
+
 
 
 

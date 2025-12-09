@@ -4,14 +4,14 @@ import userEvent from '@testing-library/user-event';
 import LoginForm from '../../components/auth/LoginForm';
 
 // Mock the API client
-vi.mock('../../lib/api', () => ({
+vi.mock('@/lib/api', () => ({
   apiClient: {
     login: vi.fn(),
     getSocialAuthUrls: vi.fn(),
   },
 }));
 
-import { apiClient } from '../../lib/api';
+import { apiClient } from '@/lib/api';
 
 describe('LoginForm', () => {
   const mockOnSuccess = vi.fn();

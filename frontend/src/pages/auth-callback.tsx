@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { apiClient } from '../lib/api';
+import { apiClient } from '@/lib/api';
 
 export default function AuthCallback() {
   const router = useRouter();
