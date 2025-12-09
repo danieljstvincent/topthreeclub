@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
-import { apiClient } from '../lib/api';
+import { apiClient } from '@/lib/api';
 
 export default function Settings() {
   const router = useRouter();

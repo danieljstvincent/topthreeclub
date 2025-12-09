@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiClient } from '../../lib/api';
+import { apiClient } from '@/lib/api';
 
 interface RegisterFormProps {
   onSuccess: () => void;
