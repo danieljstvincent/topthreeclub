@@ -1,6 +1,6 @@
 # Social Authentication Setup Guide
 
-This guide explains how to set up Google and Facebook OAuth for the TopThree.club application.
+This guide explains how to set up Google and Facebook OAuth for the 3 Top Three Club application.
 
 ## Prerequisites
 
@@ -70,7 +70,7 @@ This guide explains how to set up Google and Facebook OAuth for the TopThree.clu
    from django.contrib.sites.models import Site
    site = Site.objects.get(id=1)
    site.domain = 'localhost:8000'  # or your production domain
-   site.name = 'TopThree.club'
+   site.name = '3 Top Three Club'
    site.save()
    ```
 
