@@ -13,6 +13,8 @@ The magic of three is real. Research shows that three is the perfect number for 
 - 🤝 **Build Community** - Connect with others through shared interests and passions
 - 📊 **Track Your Journey** - Keep a personal archive of your evolving tastes over time
 
+<img width="1330" height="859" alt="Screenshot from 2025-12-10 11-09-15" src="https://github.com/user-attachments/assets/30c3a21f-17ef-4b72-84d7-bac1ede572d6" />
+
 ---
 
 ## 🚀 Tech Stack
