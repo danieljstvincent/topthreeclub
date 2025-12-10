@@ -1,0 +1,5 @@
+-r base.txt
+
+# Production-specific packages
+gunicorn>=21.2.0
+whitenoise>=6.8.2
