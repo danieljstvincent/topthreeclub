@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import HeatMeter from '@/components/dashboard/HeatMeter';
 import { apiClient } from '@/lib/api';
 
 interface User {
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [streak, setStreak] = useState(0);
   const [totalXP, setTotalXP] = useState(0);
+  const [heatLevel, setHeatLevel] = useState(0);
   const [quests, setQuests] = useState(['', '', '']);
   const [completed, setCompleted] = useState([false, false, false]);
   const [syncing, setSyncing] = useState(false);
@@ -64,6 +66,53 @@ export default function Dashboard() {
   function getTodayKey() {
     const today = new Date();
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  }
+
+  function calculateHeatLevel(data: any, currentStreak: number): number {
+    // If actively building streak: cap at level 5
+    if (currentStreak > 0) {
+      return Math.min(currentStreak, 5);
+    }
+
+    // If no streak: check for cooldown regression
+    const today = new Date();
+    let peakStreak = 0;
+    let daysSincePeak = 0;
+
+    // Look back up to 10 days to find peak streak
+    for (let i = 1; i <= 10; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      const dateKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+
+      if (data[dateKey]) {
+        const completedCount = data[dateKey].completed.filter((c: boolean) => c).length;
+        if (completedCount === 3) {
+          // Found completed day, count consecutive streak from there
+          let tempStreak = 0;
+          for (let j = i; j <= 10; j++) {
+            const streakDate = new Date(today);
+            streakDate.setDate(today.getDate() - j);
+            const streakKey = `${streakDate.getFullYear()}-${String(streakDate.getMonth() + 1).padStart(2, '0')}-${String(streakDate.getDate()).padStart(2, '0')}`;
+            if (data[streakKey]?.completed.filter((c: boolean) => c).length === 3) {
+              tempStreak++;
+            } else {
+              break;
+            }
+          }
+          peakStreak = Math.max(peakStreak, tempStreak);
+          daysSincePeak = i;
+          break;
+        }
+      }
+    }
+
+    // Apply cooldown: if reached level 5, cool down by 1 level per missed day
+    if (peakStreak >= 5) {
+      return Math.max(0, 5 - daysSincePeak);
+    }
+
+    return 0;
   }
 
   useEffect(() => {
@@ -132,6 +181,10 @@ export default function Dashboard() {
         break;
       }
     }
+
+    // Calculate heat level
+    const calculatedHeatLevel = calculateHeatLevel(data, newStreak);
+    setHeatLevel(calculatedHeatLevel);
 
     setStreak(newStreak);
     setTotalXP(newTotalXP);
@@ -318,6 +371,13 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* Heat Meter */}
+            <HeatMeter
+              heatLevel={heatLevel}
+              currentStreak={streak}
+              className="mb-8"
+            />
+
             {/* Today's Habits */}
             <div className="card p-8 mb-8">
               <div className="flex items-center justify-between mb-6">
@@ -333,42 +393,59 @@ export default function Dashboard() {
                 )}
               </div>
 
-              <div className="space-y-4">
-                {[0, 1, 2].map((index) => (
-                  <div
-                    key={index}
-                    className={`flex items-center space-x-4 p-4 rounded-lg border-2 transition-all ${
-                      completed[index]
-                        ? 'bg-success-50 border-success-200'
-                        : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <button
-                      onClick={() => toggleQuest(index)}
-                      className={`w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+              {completed.filter(c => c).length === 3 ? (
+                // Congratulations message when all habits are completed
+                <div className="text-center py-12">
+                  <div className="mb-6">
+                    <span className="text-6xl">🎉</span>
+                  </div>
+                  <h3 className="text-3xl font-bold text-gray-900 mb-3">Congratulations!</h3>
+                  <p className="text-lg text-gray-600 mb-8">
+                    Today&apos;s habits are completed
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Come back tomorrow to continue your streak!
+                  </p>
+                </div>
+              ) : (
+                // Show habit list when not all completed
+                <div className="space-y-4">
+                  {[0, 1, 2].map((index) => (
+                    <div
+                      key={index}
+                      className={`flex items-center space-x-4 p-4 rounded-lg border-2 transition-all ${
                         completed[index]
-                          ? 'bg-success-500 border-success-500'
-                          : 'bg-white border-gray-300 hover:border-primary-400'
+                          ? 'bg-success-50 border-success-200'
+                          : 'bg-gray-50 border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      {completed[index] && (
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </button>
-                    <input
-                      type="text"
-                      value={quests[index]}
-                      onChange={(e) => handleQuestTextChange(index, e.target.value)}
-                      placeholder={`Habit ${index + 1}...`}
-                      className={`flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 ${
-                        completed[index] ? 'line-through text-gray-500' : ''
-                      }`}
-                    />
-                  </div>
-                ))}
-              </div>
+                      <button
+                        onClick={() => toggleQuest(index)}
+                        className={`w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                          completed[index]
+                            ? 'bg-success-500 border-success-500'
+                            : 'bg-white border-gray-300 hover:border-primary-400'
+                        }`}
+                      >
+                        {completed[index] && (
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <input
+                        type="text"
+                        value={quests[index]}
+                        onChange={(e) => handleQuestTextChange(index, e.target.value)}
+                        placeholder={`Habit ${index + 1}...`}
+                        className={`flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 ${
+                          completed[index] ? 'line-through text-gray-500' : ''
+                        }`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <button
                 onClick={handleSubmit}
