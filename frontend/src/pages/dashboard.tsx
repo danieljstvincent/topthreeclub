@@ -305,7 +305,7 @@ export default function Dashboard() {
       }));
 
       setSubmittedToday(true);
-      alert('Successfully submitted! Great job completing your habits today! 🎉');
+      alert('Locked in! You did it. That\'s enough for today. 🎉');
       updateStats();
     } catch (error) {
       console.error('Failed to submit:', error);
@@ -332,9 +332,9 @@ export default function Dashboard() {
               <div className="card p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Current Streak</p>
+                    <p className="text-sm text-gray-600 mb-1">Momentum</p>
                     <p className="text-3xl font-bold text-gray-900">{streak}</p>
-                    <p className="text-xs text-gray-500 mt-1">days in a row</p>
+                    <p className="text-xs text-gray-500 mt-1">days rolling</p>
                   </div>
                   <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
                     <span className="text-2xl">🔥</span>
@@ -345,9 +345,9 @@ export default function Dashboard() {
               <div className="card p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Total Completed</p>
+                    <p className="text-sm text-gray-600 mb-1">Total Wins</p>
                     <p className="text-3xl font-bold text-gray-900">{totalXP}</p>
-                    <p className="text-xs text-gray-500 mt-1">habits completed</p>
+                    <p className="text-xs text-gray-500 mt-1">tasks crushed</p>
                   </div>
                   <div className="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center">
                     <span className="text-2xl">✓</span>
@@ -358,11 +358,11 @@ export default function Dashboard() {
               <div className="card p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Today&apos;s Progress</p>
+                    <p className="text-sm text-gray-600 mb-1">Today&apos;s Score</p>
                     <p className="text-3xl font-bold text-gray-900">
                       {completed.filter(c => c).length}/3
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">habits done</p>
+                    <p className="text-xs text-gray-500 mt-1">done today</p>
                   </div>
                   <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
                     <span className="text-2xl">📊</span>
@@ -378,10 +378,10 @@ export default function Dashboard() {
               className="mb-8"
             />
 
-            {/* Today's Habits */}
+            {/* Your Top 3 Today */}
             <div className="card p-8 mb-8">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Today&apos;s Habits</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Your Top 3 Today</h2>
                 {isAuthenticated && (
                   <button
                     onClick={syncFromServer}
@@ -394,17 +394,17 @@ export default function Dashboard() {
               </div>
 
               {completed.filter(c => c).length === 3 ? (
-                // Congratulations message when all habits are completed
+                // Completion message when all 3 are done
                 <div className="text-center py-12">
                   <div className="mb-6">
                     <span className="text-6xl">🎉</span>
                   </div>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-3">Congratulations!</h3>
+                  <h3 className="text-3xl font-bold text-gray-900 mb-3">You did it!</h3>
                   <p className="text-lg text-gray-600 mb-8">
-                    Today&apos;s habits are completed
+                    Your Top 3 are done. That&apos;s enough.
                   </p>
                   <p className="text-sm text-gray-500">
-                    Come back tomorrow to continue your streak!
+                    Tomorrow&apos;s a new day. Three new things.
                   </p>
                 </div>
               ) : (
@@ -437,7 +437,11 @@ export default function Dashboard() {
                         type="text"
                         value={quests[index]}
                         onChange={(e) => handleQuestTextChange(index, e.target.value)}
-                        placeholder={`Habit ${index + 1}...`}
+                        placeholder={
+                          index === 0 ? "What's the most important thing today?" :
+                          index === 1 ? "What's the second-most important?" :
+                          "What's the third?"
+                        }
                         className={`flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 ${
                           completed[index] ? 'line-through text-gray-500' : ''
                         }`}
@@ -459,12 +463,12 @@ export default function Dashboard() {
                 }`}
               >
                 {submitting
-                  ? 'Submitting...'
+                  ? 'Locking in...'
                   : submittedToday
-                  ? '✓ Submitted Today'
+                  ? '✓ Locked In'
                   : completed.filter(c => c).length === 3
-                  ? 'Submit for Today'
-                  : 'Complete all 3 habits to submit'}
+                  ? 'Lock It In'
+                  : 'Pick your 3 first'}
               </button>
             </div>
           </div>

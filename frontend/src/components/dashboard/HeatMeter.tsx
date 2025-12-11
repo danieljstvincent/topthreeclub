@@ -27,9 +27,9 @@ export default function HeatMeter({ heatLevel, currentStreak, className = '' }: 
 
   // Status text based on heat level
   const getStatusText = (): string => {
-    if (heatLevel === 0) return "Start your streak!";
-    if (heatLevel < 5) return `Building heat... ${heatLevel}/5`;
-    return "🔥 Maximum heat!";
+    if (heatLevel === 0) return "Day 1. You got this.";
+    if (heatLevel < 5) return `${heatLevel} days rolling`;
+    return "🔥 You're on fire!";
   };
 
   // Get the date for each box (counting back from today)

@@ -13,7 +13,7 @@ export default function Footer() {
               <span className="text-lg font-semibold text-gray-900">Top Three Club</span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">
-              Build better habits, one day at a time.
+              Three things. That&apos;s enough.
             </p>
           </div>
 
