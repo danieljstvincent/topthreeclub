@@ -461,22 +461,22 @@ export default function Dashboard() {
             />
 
             {/* Your Top 3 */}
-            <div className="card p-8 mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-bold text-gray-900">
+            <div className="card p-4 sm:p-6 lg:p-8 mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
                     {viewingTomorrow ? 'Your Top 3 Tomorrow' : 'Your Top 3 Today'}
                   </h2>
                   {viewingTomorrow && (
-                    <span className="px-3 py-1 bg-primary-100 text-primary-700 text-sm font-medium rounded-full">
+                    <span className="px-3 py-1 bg-primary-100 text-primary-700 text-sm font-medium rounded-full w-fit">
                       Planning Ahead
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <button
                     onClick={toggleView}
-                    className="btn-secondary py-2 px-4 text-sm"
+                    className="btn-secondary py-2 px-4 text-sm whitespace-nowrap"
                   >
                     {viewingTomorrow ? '← Back to Today' : 'Plan Tomorrow →'}
                   </button>
@@ -484,7 +484,7 @@ export default function Dashboard() {
                     <button
                       onClick={syncFromServer}
                       disabled={syncing}
-                      className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                      className="text-sm text-primary-600 hover:text-primary-700 font-medium whitespace-nowrap"
                     >
                       {syncing ? 'Syncing...' : 'Sync'}
                     </button>
