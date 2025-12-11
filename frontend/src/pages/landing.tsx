@@ -37,13 +37,13 @@ export default function Landing() {
                 href="/dashboard?openBrainDump=true"
                 className="btn-primary btn-lg text-base font-semibold"
               >
-                Start Your Top 3 Today
+                Capture your thougts
               </Link>
               <Link
                 href="/dashboard"
                 className="btn-secondary btn-lg text-base font-semibold"
               >
-                View Demo
+                View Top Three
               </Link>
             </div>
 
