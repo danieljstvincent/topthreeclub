@@ -62,7 +62,7 @@ export default function Navbar({ user, isAuthenticated, onLogout }: NavbarProps)
               <Link href="/#features" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Features
               </Link>
-              <Link href="/#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">
+              <Link href="/pricing" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Pricing
               </Link>
               {isAuthenticated ? (
@@ -148,7 +148,7 @@ export default function Navbar({ user, isAuthenticated, onLogout }: NavbarProps)
             Features
           </Link>
           <Link
-            href="/#pricing"
+            href="/pricing"
             className="block py-2 text-gray-600 hover:text-gray-900 transition-colors"
             onClick={handleMobileLinkClick}
           >

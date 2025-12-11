@@ -564,7 +564,7 @@ export default function Dashboard() {
                     submittedToday
                       ? 'bg-success-500 text-white cursor-not-allowed'
                       : completed.filter(c => c).length === 3
-                      ? 'bg-primary-600 hover:bg-primary-700 text-white shadow-md hover:shadow-lg'
+                      ? 'bg-success-600 hover:bg-success-700 text-white shadow-md hover:shadow-lg'
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
                 >
