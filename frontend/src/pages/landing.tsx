@@ -1,9 +1,158 @@
 import Head from 'next/head';
 import Link from 'next/link';
+import { useEffect, useState, useCallback } from 'react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import HeatMeter from '@/components/dashboard/HeatMeter';
 
 export default function Landing() {
+  const [streak, setStreak] = useState(0);
+  const [totalXP, setTotalXP] = useState(0);
+  const [heatLevel, setHeatLevel] = useState(0);
+  const [quests, setQuests] = useState(['', '', '']);
+  const [completed, setCompleted] = useState([false, false, false]);
+
+  const STORAGE_KEY = 'topthree_data';
+  const QUESTS_KEY = 'topthree_quests';
+
+  function loadData() {
+    if (typeof window === 'undefined') return {};
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  }
+
+  function saveData(data: any) {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function loadQuests() {
+    if (typeof window === 'undefined') return ['', '', ''];
+    const stored = localStorage.getItem(QUESTS_KEY);
+    return stored ? JSON.parse(stored) : ['', '', ''];
+  }
+
+  function saveQuests(quests: string[]) {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(QUESTS_KEY, JSON.stringify(quests));
+  }
+
+  function getTodayKey() {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  }
+
+  function calculateHeatLevel(data: any, currentStreak: number): number {
+    if (currentStreak > 0) {
+      return Math.min(currentStreak, 5);
+    }
+
+    const today = new Date();
+    let peakStreak = 0;
+    let daysSincePeak = 0;
+
+    for (let i = 1; i <= 10; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      const dateKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+
+      if (data[dateKey]) {
+        const completedCount = data[dateKey].completed.filter((c: boolean) => c).length;
+        if (completedCount === 3) {
+          let tempStreak = 0;
+          for (let j = i; j <= 10; j++) {
+            const streakDate = new Date(today);
+            streakDate.setDate(today.getDate() - j);
+            const streakKey = `${streakDate.getFullYear()}-${String(streakDate.getMonth() + 1).padStart(2, '0')}-${String(streakDate.getDate()).padStart(2, '0')}`;
+            if (data[streakKey]?.completed.filter((c: boolean) => c).length === 3) {
+              tempStreak++;
+            } else {
+              break;
+            }
+          }
+          peakStreak = Math.max(peakStreak, tempStreak);
+          daysSincePeak = i;
+          break;
+        }
+      }
+    }
+
+    if (peakStreak >= 5) {
+      return Math.max(0, 5 - daysSincePeak);
+    }
+
+    return 0;
+  }
+
+  const updateStats = useCallback(() => {
+    const data = loadData();
+    const dates = Object.keys(data).sort().reverse();
+    let newTotalXP = 0;
+    const today = new Date();
+
+    for (const dateKey of dates) {
+      const completedCount = data[dateKey].completed.filter((c: boolean) => c).length;
+      newTotalXP += completedCount;
+    }
+
+    let newStreak = 0;
+    for (let i = 0; i < dates.length; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      const dateKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+
+      if (data[dateKey]) {
+        const completedCount = data[dateKey].completed.filter((c: boolean) => c).length;
+        if (completedCount === 3) {
+          newStreak++;
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+
+    const calculatedHeatLevel = calculateHeatLevel(data, newStreak);
+    setHeatLevel(calculatedHeatLevel);
+    setStreak(newStreak);
+    setTotalXP(newTotalXP);
+  }, []);
+
+  const toggleQuest = (questIndex: number) => {
+    const data = loadData();
+    const todayKey = getTodayKey();
+
+    if (!data[todayKey]) {
+      data[todayKey] = { completed: [false, false, false] };
+    }
+
+    const newCompleted = [...completed];
+    newCompleted[questIndex] = !newCompleted[questIndex];
+    data[todayKey].completed[questIndex] = newCompleted[questIndex];
+
+    setCompleted(newCompleted);
+    saveData(data);
+    updateStats();
+  };
+
+  const handleQuestTextChange = (questIndex: number, text: string) => {
+    const newQuests = [...quests];
+    newQuests[questIndex] = text;
+    setQuests(newQuests);
+    saveQuests(newQuests);
+  };
+
+  useEffect(() => {
+    const loadedQuests = loadQuests();
+    setQuests(loadedQuests);
+    const data = loadData();
+    const todayKey = getTodayKey();
+    const todayData = data[todayKey] || { completed: [false, false, false] };
+    setCompleted(todayData.completed);
+    updateStats();
+  }, [updateStats]);
+
   return (
     <>
       <Head>
@@ -43,11 +192,141 @@ export default function Landing() {
                 href="/dashboard"
                 className="btn-secondary btn-lg text-base font-semibold"
               >
-                View Top Three
+                Start Now
               </Link>
             </div>
 
             <p className="text-sm text-gray-500 mt-6">No overwhelm. No guilt. Just three things.</p>
+          </div>
+        </section>
+
+        {/* Top Three Dashboard Section */}
+        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+          <div className="section-container">
+            {/* Stats Cards */}
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <div className="card p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Momentum</p>
+                    <p className="text-3xl font-bold text-gray-900">{streak}</p>
+                    <p className="text-xs text-gray-500 mt-1">days rolling</p>
+                  </div>
+                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">🔥</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Total Wins</p>
+                    <p className="text-3xl font-bold text-gray-900">{totalXP}</p>
+                    <p className="text-xs text-gray-500 mt-1">tasks crushed</p>
+                  </div>
+                  <div className="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">✓</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Today&apos;s Score</p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {completed.filter(c => c).length}/3
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">done today</p>
+                  </div>
+                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">📊</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Heat Meter */}
+            <HeatMeter
+              heatLevel={heatLevel}
+              currentStreak={streak}
+              className="mb-8"
+            />
+
+            {/* Your Top 3 */}
+            <div className="card p-4 sm:p-6 lg:p-8 mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                  Your Top 3 Today
+                </h2>
+              </div>
+
+              {completed.filter(c => c).length === 3 ? (
+                <div className="text-center py-12">
+                  <div className="mb-6">
+                    <span className="text-6xl">🎉</span>
+                  </div>
+                  <h3 className="text-3xl font-bold text-gray-900 mb-3">You did it!</h3>
+                  <p className="text-lg text-gray-600 mb-8">
+                    Your Top 3 are done. That&apos;s enough.
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Tomorrow&apos;s a new day. Three new things.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {[0, 1, 2].map((index) => (
+                    <div
+                      key={index}
+                      className={`flex items-center space-x-4 p-4 rounded-lg border-2 transition-all ${
+                        completed[index]
+                          ? 'bg-success-50 border-success-200'
+                          : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <button
+                        onClick={() => toggleQuest(index)}
+                        className={`w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                          completed[index]
+                            ? 'bg-success-500 border-success-500'
+                            : 'bg-white border-gray-300 hover:border-primary-400'
+                        }`}
+                      >
+                        {completed[index] && (
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <input
+                        type="text"
+                        value={quests[index]}
+                        onChange={(e) => handleQuestTextChange(index, e.target.value)}
+                        placeholder={
+                          index === 0 ? "What's the most important thing today?" :
+                          index === 1 ? "What's the second-most important?" :
+                          "What's the third?"
+                        }
+                        className={`flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 ${
+                          completed[index] ? 'line-through text-gray-500' : ''
+                        }`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-6 text-center">
+                <Link
+                  href="/dashboard"
+                  className="btn-primary inline-block px-6 py-3"
+                >
+                  Go to Full Dashboard
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
 
