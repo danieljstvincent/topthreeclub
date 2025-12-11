@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import HeatMeter from '@/components/dashboard/HeatMeter';
+import BrainDumpModal from '@/components/dashboard/BrainDumpModal';
+import BrainDumpFAB from '@/components/dashboard/BrainDumpFAB';
 import { apiClient } from '@/lib/api';
 
 interface User {
@@ -36,9 +38,12 @@ export default function Dashboard() {
   const [syncing, setSyncing] = useState(false);
   const [submittedToday, setSubmittedToday] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [brainDumpOpen, setBrainDumpOpen] = useState(false);
+  const [viewingTomorrow, setViewingTomorrow] = useState(false);
 
   const STORAGE_KEY = 'topthree_data';
   const QUESTS_KEY = 'topthree_quests';
+  const QUESTS_TOMORROW_KEY = 'topthree_quests_tomorrow';
   const SUBMISSION_KEY = 'topthree_submission';
 
   function loadData() {
@@ -63,9 +68,26 @@ export default function Dashboard() {
     localStorage.setItem(QUESTS_KEY, JSON.stringify(quests));
   }
 
+  function loadTomorrowQuests() {
+    if (typeof window === 'undefined') return ['', '', ''];
+    const stored = localStorage.getItem(QUESTS_TOMORROW_KEY);
+    return stored ? JSON.parse(stored) : ['', '', ''];
+  }
+
+  function saveTomorrowQuests(quests: string[]) {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(QUESTS_TOMORROW_KEY, JSON.stringify(quests));
+  }
+
   function getTodayKey() {
     const today = new Date();
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  }
+
+  function getTomorrowKey() {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
   }
 
   function calculateHeatLevel(data: any, currentStreak: number): number {
@@ -117,6 +139,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     checkAuth();
+
+    // Check if we should auto-open brain dump from URL parameter
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('openBrainDump') === 'true') {
+      setBrainDumpOpen(true);
+      // Clean up URL parameter
+      window.history.replaceState({}, '', '/dashboard');
+    }
   }, []);
 
   const checkAuth = async () => {
@@ -211,11 +241,33 @@ export default function Dashboard() {
     }
   };
 
+  const toggleView = () => {
+    if (viewingTomorrow) {
+      // Switch to today
+      saveTomorrowQuests(quests); // Save current edits to tomorrow
+      setQuests(loadQuests()); // Load today's quests
+      setCompleted([false, false, false]); // Reset completed for today's view
+      setViewingTomorrow(false);
+    } else {
+      // Switch to tomorrow
+      saveQuests(quests); // Save current edits to today
+      setQuests(loadTomorrowQuests()); // Load tomorrow's quests
+      setCompleted([false, false, false]); // Tomorrow hasn't been completed yet
+      setViewingTomorrow(true);
+    }
+  };
+
   const handleQuestTextChange = (questIndex: number, text: string) => {
     const newQuests = [...quests];
     newQuests[questIndex] = text;
     setQuests(newQuests);
-    saveQuests(newQuests);
+
+    // Save to appropriate storage based on view
+    if (viewingTomorrow) {
+      saveTomorrowQuests(newQuests);
+    } else {
+      saveQuests(newQuests);
+    }
 
     if (isAuthenticated) {
       syncToServer();
@@ -274,6 +326,36 @@ export default function Dashboard() {
     setUser(null);
     setIsAuthenticated(false);
     router.push('/');
+  };
+
+  const handleSelectBrainDumpIdea = (text: string) => {
+    // Find first empty quest slot
+    const emptyIndex = quests.findIndex((q) => !q.trim());
+    if (emptyIndex !== -1) {
+      const newQuests = [...quests];
+      newQuests[emptyIndex] = text;
+      setQuests(newQuests);
+
+      // Save to appropriate storage based on view
+      if (viewingTomorrow) {
+        saveTomorrowQuests(newQuests);
+      } else {
+        saveQuests(newQuests);
+
+        if (isAuthenticated) {
+          syncToServer();
+        }
+      }
+
+      // If all 3 are now filled, close brain dump
+      if (newQuests.every((q) => q.trim())) {
+        setBrainDumpOpen(false);
+      }
+    } else {
+      // All slots filled - notify user
+      const dayLabel = viewingTomorrow ? "tomorrow's" : "today's";
+      alert(`Your Top 3 for ${dayLabel} are full! Complete or clear one first.`);
+    }
   };
 
   const handleSubmit = async () => {
@@ -378,23 +460,40 @@ export default function Dashboard() {
               className="mb-8"
             />
 
-            {/* Your Top 3 Today */}
+            {/* Your Top 3 */}
             <div className="card p-8 mb-8">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Your Top 3 Today</h2>
-                {isAuthenticated && (
+                <div className="flex items-center gap-3">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {viewingTomorrow ? 'Your Top 3 Tomorrow' : 'Your Top 3 Today'}
+                  </h2>
+                  {viewingTomorrow && (
+                    <span className="px-3 py-1 bg-primary-100 text-primary-700 text-sm font-medium rounded-full">
+                      Planning Ahead
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
                   <button
-                    onClick={syncFromServer}
-                    disabled={syncing}
-                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                    onClick={toggleView}
+                    className="btn-secondary py-2 px-4 text-sm"
                   >
-                    {syncing ? 'Syncing...' : 'Sync'}
+                    {viewingTomorrow ? '← Back to Today' : 'Plan Tomorrow →'}
                   </button>
-                )}
+                  {isAuthenticated && !viewingTomorrow && (
+                    <button
+                      onClick={syncFromServer}
+                      disabled={syncing}
+                      className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                    >
+                      {syncing ? 'Syncing...' : 'Sync'}
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {completed.filter(c => c).length === 3 ? (
-                // Completion message when all 3 are done
+              {!viewingTomorrow && completed.filter(c => c).length === 3 ? (
+                // Completion message when all 3 are done (only for today)
                 <div className="text-center py-12">
                   <div className="mb-6">
                     <span className="text-6xl">🎉</span>
@@ -419,28 +518,34 @@ export default function Dashboard() {
                           : 'bg-gray-50 border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <button
-                        onClick={() => toggleQuest(index)}
-                        className={`w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                          completed[index]
-                            ? 'bg-success-500 border-success-500'
-                            : 'bg-white border-gray-300 hover:border-primary-400'
-                        }`}
-                      >
-                        {completed[index] && (
-                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </button>
+                      {!viewingTomorrow && (
+                        <button
+                          onClick={() => toggleQuest(index)}
+                          className={`w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                            completed[index]
+                              ? 'bg-success-500 border-success-500'
+                              : 'bg-white border-gray-300 hover:border-primary-400'
+                          }`}
+                        >
+                          {completed[index] && (
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </button>
+                      )}
                       <input
                         type="text"
                         value={quests[index]}
                         onChange={(e) => handleQuestTextChange(index, e.target.value)}
                         placeholder={
-                          index === 0 ? "What's the most important thing today?" :
-                          index === 1 ? "What's the second-most important?" :
-                          "What's the third?"
+                          viewingTomorrow
+                            ? (index === 0 ? "What's the most important thing tomorrow?" :
+                               index === 1 ? "What's the second-most important?" :
+                               "What's the third?")
+                            : (index === 0 ? "What's the most important thing today?" :
+                               index === 1 ? "What's the second-most important?" :
+                               "What's the third?")
                         }
                         className={`flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 ${
                           completed[index] ? 'line-through text-gray-500' : ''
@@ -451,30 +556,50 @@ export default function Dashboard() {
                 </div>
               )}
 
-              <button
-                onClick={handleSubmit}
-                disabled={submitting || submittedToday || completed.filter(c => c).length < 3}
-                className={`mt-6 w-full py-3 px-6 rounded-lg font-semibold transition-all ${
-                  submittedToday
-                    ? 'bg-success-500 text-white cursor-not-allowed'
+              {!viewingTomorrow && (
+                <button
+                  onClick={handleSubmit}
+                  disabled={submitting || submittedToday || completed.filter(c => c).length < 3}
+                  className={`mt-6 w-full py-3 px-6 rounded-lg font-semibold transition-all ${
+                    submittedToday
+                      ? 'bg-success-500 text-white cursor-not-allowed'
+                      : completed.filter(c => c).length === 3
+                      ? 'bg-primary-600 hover:bg-primary-700 text-white shadow-md hover:shadow-lg'
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {submitting
+                    ? 'Locking in...'
+                    : submittedToday
+                    ? '✓ Locked In'
                     : completed.filter(c => c).length === 3
-                    ? 'bg-primary-600 hover:bg-primary-700 text-white shadow-md hover:shadow-lg'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {submitting
-                  ? 'Locking in...'
-                  : submittedToday
-                  ? '✓ Locked In'
-                  : completed.filter(c => c).length === 3
-                  ? 'Lock It In'
-                  : 'Pick your 3 first'}
-              </button>
+                    ? 'Lock It In'
+                    : 'Pick your 3 first'}
+                </button>
+              )}
+              {viewingTomorrow && (
+                <div className="mt-6 p-4 bg-primary-50 rounded-lg text-center">
+                  <p className="text-sm text-primary-700">
+                    ✨ Planning ahead reduces tomorrow's decision fatigue
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         <Footer />
+
+        {/* Brain Dump Modal */}
+        <BrainDumpModal
+          isOpen={brainDumpOpen}
+          onClose={() => setBrainDumpOpen(false)}
+          onSelectIdea={handleSelectBrainDumpIdea}
+          isAuthenticated={isAuthenticated}
+        />
+
+        {/* Floating Action Button */}
+        <BrainDumpFAB onClick={() => setBrainDumpOpen(true)} />
       </div>
     </>
   );

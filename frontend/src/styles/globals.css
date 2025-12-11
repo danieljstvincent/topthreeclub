@@ -63,4 +63,13 @@
   .glass-effect {
     @apply bg-white/80 backdrop-blur-md border border-gray-200/50;
   }
+
+  /* Brain Dump Floating Action Button */
+  .brain-dump-fab {
+    @apply fixed bottom-8 right-8 w-16 h-16 bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center z-30 active:scale-95;
+  }
+
+  .brain-dump-fab-tooltip {
+    @apply absolute bottom-full right-0 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none;
+  }
 }

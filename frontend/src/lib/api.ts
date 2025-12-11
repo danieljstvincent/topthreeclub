@@ -6,6 +6,14 @@ interface ApiResponse<T> {
   error?: string;
 }
 
+export interface BrainDumpIdea {
+  id: number;
+  text: string;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 class ApiClient {
   private async request<T>(
     endpoint: string,
@@ -100,6 +108,39 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify({ quests: data }),
     });
+  }
+
+  // Brain Dump API methods
+  async getBrainDumpIdeas(showArchived = false): Promise<ApiResponse<BrainDumpIdea[]>> {
+    const queryParam = showArchived ? '?archived=true' : '';
+    return this.request(`/api/users/brain-dump/${queryParam}`);
+  }
+
+  async createBrainDumpIdea(text: string): Promise<ApiResponse<BrainDumpIdea>> {
+    return this.request('/api/users/brain-dump/', {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    });
+  }
+
+  async updateBrainDumpIdea(
+    id: number,
+    data: Partial<BrainDumpIdea>
+  ): Promise<ApiResponse<BrainDumpIdea>> {
+    return this.request(`/api/users/brain-dump/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteBrainDumpIdea(id: number): Promise<ApiResponse<void>> {
+    return this.request(`/api/users/brain-dump/${id}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getArchivedIdeas(): Promise<ApiResponse<BrainDumpIdea[]>> {
+    return this.request('/api/users/brain-dump/archived/');
   }
 }
 

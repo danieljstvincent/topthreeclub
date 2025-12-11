@@ -34,7 +34,7 @@ export default function Landing() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link
-                href="/signup"
+                href="/dashboard?openBrainDump=true"
                 className="btn-primary btn-lg text-base font-semibold"
               >
                 Start Your Top 3 Today
@@ -102,7 +102,7 @@ export default function Landing() {
                 No overwhelm. No shame. No guilt. Just progress.
               </p>
               <Link
-                href="/signup"
+                href="/dashboard?openBrainDump=true"
                 className="inline-block bg-white text-primary-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors shadow-lg"
               >
                 Start Your Top 3 Today
