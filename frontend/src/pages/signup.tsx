@@ -48,8 +48,8 @@ export default function Signup() {
         <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-md w-full">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Get started</h2>
-              <p className="text-gray-600">Create your account and start building better habits</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Start Your Top 3</h2>
+              <p className="text-gray-600">No overwhelm. No shame. Just three things a day.</p>
             </div>
 
             <div className="card p-8">
