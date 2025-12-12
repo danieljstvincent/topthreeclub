@@ -11,6 +11,7 @@ export default function Landing() {
   const [heatLevel, setHeatLevel] = useState(0);
   const [quests, setQuests] = useState(['', '', '']);
   const [completed, setCompleted] = useState([false, false, false]);
+  const [errors, setErrors] = useState(['', '', '']);
 
   const STORAGE_KEY = 'topthree_data';
   const QUESTS_KEY = 'topthree_quests';
@@ -120,6 +121,25 @@ export default function Landing() {
   }, []);
 
   const toggleQuest = (questIndex: number) => {
+    const questText = quests[questIndex].trim();
+
+    // If trying to CHECK a task (currently unchecked)
+    if (!completed[questIndex]) {
+      // Validate: must have at least 1 character
+      if (questText.length === 0) {
+        // Show error
+        const newErrors = [...errors];
+        newErrors[questIndex] = 'Please enter a task before checking it off';
+        setErrors(newErrors);
+        return; // Don't toggle
+      }
+    }
+
+    // Clear any error for this task
+    const newErrors = [...errors];
+    newErrors[questIndex] = '';
+    setErrors(newErrors);
+
     const data = loadData();
     const todayKey = getTodayKey();
 
@@ -140,6 +160,14 @@ export default function Landing() {
     const newQuests = [...quests];
     newQuests[questIndex] = text;
     setQuests(newQuests);
+
+    // Clear error when user types
+    if (errors[questIndex]) {
+      const newErrors = [...errors];
+      newErrors[questIndex] = '';
+      setErrors(newErrors);
+    }
+
     saveQuests(newQuests);
   };
 
@@ -278,41 +306,47 @@ export default function Landing() {
               ) : (
                 <div className="space-y-4">
                   {[0, 1, 2].map((index) => (
-                    <div
-                      key={index}
-                      className={`flex items-center space-x-4 p-4 rounded-lg border-2 transition-all ${
-                        completed[index]
-                          ? 'bg-success-50 border-success-200'
-                          : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <button
-                        onClick={() => toggleQuest(index)}
-                        className={`w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                    <div key={index}>
+                      <div
+                        className={`flex items-center space-x-4 p-4 rounded-lg border-2 transition-all ${
                           completed[index]
-                            ? 'bg-success-500 border-success-500'
-                            : 'bg-white border-gray-300 hover:border-primary-400'
+                            ? 'bg-success-50 border-success-200'
+                            : 'bg-gray-50 border-gray-200 hover:border-gray-300'
                         }`}
                       >
-                        {completed[index] && (
-                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </button>
-                      <input
-                        type="text"
-                        value={quests[index]}
-                        onChange={(e) => handleQuestTextChange(index, e.target.value)}
-                        placeholder={
-                          index === 0 ? "What's the most important thing today?" :
-                          index === 1 ? "What's the second-most important?" :
-                          "What's the third?"
-                        }
-                        className={`flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 ${
-                          completed[index] ? 'line-through text-gray-500' : ''
-                        }`}
-                      />
+                        <button
+                          onClick={() => toggleQuest(index)}
+                          className={`w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                            completed[index]
+                              ? 'bg-success-500 border-success-500'
+                              : 'bg-white border-gray-300 hover:border-primary-400'
+                          }`}
+                        >
+                          {completed[index] && (
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </button>
+                        <input
+                          type="text"
+                          value={quests[index]}
+                          onChange={(e) => handleQuestTextChange(index, e.target.value)}
+                          placeholder={
+                            index === 0 ? "What's the most important thing today?" :
+                            index === 1 ? "What's the second-most important?" :
+                            "What's the third?"
+                          }
+                          className={`flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 ${
+                            completed[index] ? 'line-through text-gray-500' : ''
+                          }`}
+                        />
+                      </div>
+                      {errors[index] && (
+                        <div className="text-red-600 text-xs mt-1 px-1">
+                          {errors[index]}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
