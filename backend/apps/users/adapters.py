@@ -26,6 +26,14 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
                 user.username = f"user_{sociallogin.account.provider}_{sociallogin.account.uid[:8]}"
         
         return user
+    
+    def get_connect_redirect_url(self, request, socialaccount):
+        """Redirect after connecting social account"""
+        return settings.LOGIN_REDIRECT_URL
+    
+    def is_auto_signup_allowed(self, request, sociallogin):
+        """Allow automatic signup for social accounts"""
+        return True
 
 
 class AccountAdapter(DefaultAccountAdapter):
