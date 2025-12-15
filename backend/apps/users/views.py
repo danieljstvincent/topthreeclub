@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import login, logout
 from django.utils import timezone
-from datetime import date
+from datetime import date, timedelta, datetime
 from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.providers.google.views import oauth2_login
 from allauth.socialaccount.providers.facebook.views import oauth2_login as fb_oauth2_login
@@ -250,12 +250,12 @@ def quest_bulk_sync_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def quest_stats_view(request):
-    """Get user statistics (streak, total XP)"""
+    """Get user statistics (streak, total XP, momentum hours)"""
     progress_list = list(QuestProgress.objects.filter(user=request.user).order_by('-date'))
     
     total_xp = 0
     streak = 0
-    today = date.today()
+    today = timezone.localdate()
     
     # Create a map for quick lookup
     progress_map = {progress.date: progress for progress in progress_list}
@@ -284,8 +284,23 @@ def quest_stats_view(request):
             # If no progress for this day, streak is broken
             break
     
+    # Calculate hours of consistency based on current streak
+    momentum_hours = 0
+    if streak > 0:
+        # Start counting from the beginning of the streak (midnight of first day)
+        streak_start_date = today - timedelta(days=streak - 1)
+        start_datetime = datetime.combine(streak_start_date, datetime.min.time())
+        
+        # Ensure timezone awareness matches the current time
+        if timezone.is_naive(start_datetime):
+            start_datetime = timezone.make_aware(start_datetime, timezone.get_default_timezone())
+        
+        now = timezone.now()
+        momentum_hours = int((now - start_datetime).total_seconds() // 3600)
+    
     return Response({
         'streak': streak,
         'total_xp': total_xp,
+        'momentum_hours': momentum_hours,
     })
 
