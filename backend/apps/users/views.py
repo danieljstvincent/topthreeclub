@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import login, logout
 from django.utils import timezone
+from django.db import transaction
 from datetime import date, timedelta, datetime
 from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.providers.google.views import oauth2_login
@@ -188,6 +189,91 @@ def submit_quest_view(request):
         return Response({
             'error': 'No quest progress found for today'
         }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def lock_choices_view(request):
+    """Lock in quest choices for today"""
+    from django.utils import timezone
+
+    today = date.today()
+
+    try:
+        progress = QuestProgress.objects.get(user=request.user, date=today)
+
+        # Validate all 3 quests have text
+        if not all([
+            progress.quest_1_text.strip(),
+            progress.quest_2_text.strip(),
+            progress.quest_3_text.strip()
+        ]):
+            return Response({
+                'error': 'All 3 quests must have text before locking'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Lock the choices
+        progress.choices_locked = True
+        progress.choices_locked_at = timezone.now()
+        progress.save()
+
+        serializer = QuestProgressSerializer(progress)
+        return Response({
+            'message': 'Choices locked successfully!',
+            'data': serializer.data
+        }, status=status.HTTP_200_OK)
+
+    except QuestProgress.DoesNotExist:
+        return Response({
+            'error': 'No quest progress found for today'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def delete_account_view(request):
+    """
+    Delete user account and all associated data.
+    Requires password verification for security.
+    """
+    password = request.data.get('password')
+    confirmation = request.data.get('confirmation')
+
+    # Validate input
+    if not password:
+        return Response({
+            'error': 'Password is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    if confirmation != 'DELETE MY ACCOUNT':
+        return Response({
+            'error': 'Please type "DELETE MY ACCOUNT" to confirm'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Verify password
+    user = request.user
+    if not user.check_password(password):
+        return Response({
+            'error': 'Incorrect password'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Use atomic transaction to ensure all-or-nothing deletion
+        with transaction.atomic():
+            # Logout before deletion
+            logout(request)
+
+            # Delete user (CASCADE will delete QuestProgress automatically)
+            user.delete()
+
+        return Response({
+            'message': 'Account successfully deleted'
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({
+            'error': 'Failed to delete account. Please try again.'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])

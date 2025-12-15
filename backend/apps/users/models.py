@@ -19,6 +19,8 @@ class QuestProgress(models.Model):
     quest_3_completed = models.BooleanField(default=False)
     submitted = models.BooleanField(default=False)
     submitted_at = models.DateTimeField(null=True, blank=True)
+    choices_locked = models.BooleanField(default=False)
+    choices_locked_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
