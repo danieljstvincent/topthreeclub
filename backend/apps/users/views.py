@@ -1,10 +1,19 @@
+import os
 from rest_framework import status, viewsets
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import api_view, permission_classes, action, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from django.contrib.auth import login, logout
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.forms import PasswordResetForm
 from django.utils import timezone
 from django.db import transaction
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
 from datetime import date, timedelta, datetime
 from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.providers.google.views import oauth2_login
@@ -15,21 +24,42 @@ from .serializers import UserSerializer, LoginSerializer, QuestProgressSerialize
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([AnonRateThrottle])
 def register_view(request):
     """Register a new user"""
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
         login(request, user)
+        # Create a serializer instance without password fields for response
+        user_data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+        }
         return Response({
-            'user': UserSerializer(user).data,
+            'user': user_data,
             'message': 'Registration successful'
         }, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # Format errors for better frontend display
+    errors = {}
+    for field, error_list in serializer.errors.items():
+        if isinstance(error_list, list):
+            errors[field] = error_list[0] if error_list else 'Invalid value'
+        else:
+            errors[field] = str(error_list)
+    return Response({
+        'error': 'Registration failed',
+        'errors': errors
+    }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([AnonRateThrottle])
 def login_view(request):
     """Login user"""
     serializer = LoginSerializer(data=request.data)
@@ -40,7 +70,11 @@ def login_view(request):
             'user': UserSerializer(user).data,
             'message': 'Login successful'
         }, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # Security: Don't reveal whether username exists or not
+    # Return generic error message to prevent user enumeration
+    return Response({
+        'error': 'Invalid credentials'
+    }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -389,4 +423,128 @@ def quest_stats_view(request):
         'total_xp': total_xp,
         'momentum_hours': momentum_hours,
     })
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@throttle_classes([AnonRateThrottle])
+def password_reset_request_view(request):
+    """Request password reset - sends email with reset link"""
+    email = request.data.get('email')
+    username = request.data.get('username')
+    
+    if not email and not username:
+        return Response({
+            'error': 'Email or username is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Find user by email or username
+    try:
+        if email:
+            user = User.objects.get(email=email)
+        else:
+            user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        # Don't reveal if user exists (security best practice)
+        return Response({
+            'message': 'If an account exists with that email/username, a password reset link has been sent.'
+        }, status=status.HTTP_200_OK)
+    
+    # Generate password reset token
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    
+    # Build reset URL
+    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+    reset_url = f"{frontend_url}/reset-password?uid={uid}&token={token}"
+    
+    # Send email (in production, configure email backend)
+    try:
+        subject = 'Reset your Top Three Club password'
+        message = f"""
+Hello {user.username},
+
+You requested to reset your password for Top Three Club.
+
+Click the link below to reset your password:
+{reset_url}
+
+This link will expire in 24 hours.
+
+If you didn't request this, please ignore this email.
+
+Best regards,
+Top Three Club Team
+"""
+        if user.email:
+            send_mail(
+                subject,
+                message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+    except Exception as e:
+        # Log error but don't reveal to user
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Failed to send password reset email: {e}")
+    
+    # Always return success message (don't reveal if user exists)
+    return Response({
+        'message': 'If an account exists with that email/username, a password reset link has been sent.'
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@throttle_classes([AnonRateThrottle])
+def password_reset_confirm_view(request):
+    """Confirm password reset with token"""
+    uid = request.data.get('uid')
+    token = request.data.get('token')
+    new_password = request.data.get('password')
+    password2 = request.data.get('password2')
+    
+    if not all([uid, token, new_password, password2]):
+        return Response({
+            'error': 'All fields are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    if new_password != password2:
+        return Response({
+            'error': 'Passwords do not match'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Validate password strength
+    from django.contrib.auth.password_validation import validate_password
+    try:
+        validate_password(new_password)
+    except Exception as e:
+        return Response({
+            'error': '; '.join(e.messages) if hasattr(e, 'messages') else 'Password does not meet requirements'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Decode user ID
+        user_id = force_str(urlsafe_base64_decode(uid))
+        user = User.objects.get(pk=user_id)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return Response({
+            'error': 'Invalid reset link'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Verify token
+    if not default_token_generator.check_token(user, token):
+        return Response({
+            'error': 'Invalid or expired reset link'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Reset password
+    user.set_password(new_password)
+    user.save()
+    
+    return Response({
+        'message': 'Password has been reset successfully. You can now login with your new password.'
+    }, status=status.HTTP_200_OK)
 

@@ -5,26 +5,37 @@ from .models import User, QuestProgress
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """User serializer for registration and profile"""
+    """User serializer for registration"""
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True, label='Confirm Password')
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'password2', 'first_name', 'last_name')
+        fields = ('id', 'username', 'email', 'password', 'password2', 'first_name', 'last_name', 'date_joined')
         extra_kwargs = {
             'password': {'write_only': True},
+            'date_joined': {'read_only': True},
         }
 
     def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
+        # Validate password match for registration
+        if attrs.get('password') != attrs.get('password2'):
             raise serializers.ValidationError({"password": "Password fields didn't match."})
         return attrs
 
     def create(self, validated_data):
-        validated_data.pop('password2')
+        # Remove password2 before creating user
+        validated_data.pop('password2', None)
         user = User.objects.create_user(**validated_data)
         return user
+
+    def to_representation(self, instance):
+        """Exclude password fields when reading user data"""
+        data = super().to_representation(instance)
+        # Remove password fields from output (they're write_only, but be explicit)
+        data.pop('password', None)
+        data.pop('password2', None)
+        return data
 
 
 class LoginSerializer(serializers.Serializer):
