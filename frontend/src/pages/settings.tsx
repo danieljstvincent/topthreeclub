@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import { apiClient } from '@/lib/api';
@@ -80,13 +81,23 @@ export default function Settings() {
               </div>
 
               <div className="card p-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Danger Zone</h2>
-                <button
-                  onClick={handleLogout}
-                  className="btn-secondary text-red-600 border-red-300 hover:bg-red-50"
-                >
-                  Logout
-                </button>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">Danger Zone</h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  Irreversible and destructive actions
+                </p>
+                <div className="space-y-3">
+                  <button
+                    onClick={handleLogout}
+                    className="btn-secondary text-gray-700 border-gray-300 hover:bg-gray-50 w-full"
+                  >
+                    Logout
+                  </button>
+                  <Link href="/delete-account">
+                    <button className="btn-secondary w-full text-red-600 border-red-300 hover:bg-red-50">
+                      Delete Account
+                    </button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

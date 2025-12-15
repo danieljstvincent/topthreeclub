@@ -74,6 +74,16 @@ class ApiClient {
     });
   }
 
+  async deleteAccount(
+    password: string,
+    confirmation: string
+  ): Promise<ApiResponse<any>> {
+    return this.request('/api/users/account/delete/', {
+      method: 'POST',
+      body: JSON.stringify({ password, confirmation }),
+    });
+  }
+
   async getSocialAuthUrls(): Promise<ApiResponse<{ google?: string; facebook?: string }>> {
     return this.request('/api/users/social-auth-urls/');
   }
@@ -91,6 +101,12 @@ class ApiClient {
 
   async submitQuest(): Promise<ApiResponse<any>> {
     return this.request('/api/users/quests/submit/', {
+      method: 'POST',
+    });
+  }
+
+  async lockChoices(): Promise<ApiResponse<any>> {
+    return this.request('/api/users/quests/lock-choices/', {
       method: 'POST',
     });
   }

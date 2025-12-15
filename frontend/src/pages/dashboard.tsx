@@ -25,6 +25,8 @@ interface QuestProgress {
   quest_3_completed: boolean;
   submitted?: boolean;
   submitted_at?: string;
+  choices_locked?: boolean;
+  choices_locked_at?: string;
 }
 
 interface QuestHistoryEntry {
@@ -50,11 +52,14 @@ export default function Dashboard() {
   const [viewingTomorrow, setViewingTomorrow] = useState(false);
   const [questHistory, setQuestHistory] = useState<QuestHistoryEntry[]>([]);
   const [accountCreatedDate, setAccountCreatedDate] = useState<string>('');
+  const [choicesLocked, setChoicesLocked] = useState(false);
+  const [lockingChoices, setLockingChoices] = useState(false);
 
   const STORAGE_KEY = 'topthree_data';
   const QUESTS_KEY = 'topthree_quests';
   const QUESTS_TOMORROW_KEY = 'topthree_quests_tomorrow';
   const SUBMISSION_KEY = 'topthree_submission';
+  const CHOICES_LOCKED_KEY = 'topthree_choices_locked';
 
   function loadData() {
     if (typeof window === 'undefined') return {};
@@ -98,6 +103,25 @@ export default function Dashboard() {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     return `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+  }
+
+  function loadChoicesLocked() {
+    if (typeof window === 'undefined') return false;
+    const stored = localStorage.getItem(CHOICES_LOCKED_KEY);
+    if (!stored) return false;
+    const data = JSON.parse(stored);
+    const todayKey = getTodayKey();
+    return data.date === todayKey && data.locked === true;
+  }
+
+  function saveChoicesLocked(locked: boolean) {
+    if (typeof window === 'undefined') return;
+    const todayKey = getTodayKey();
+    localStorage.setItem(CHOICES_LOCKED_KEY, JSON.stringify({
+      date: todayKey,
+      locked: locked,
+      timestamp: new Date().toISOString()
+    }));
   }
 
   function calculateHeatLevel(data: any, currentStreak: number): number {
@@ -205,6 +229,8 @@ export default function Dashboard() {
     setCompleted(todayData.completed);
     const submitted = checkSubmittedToday();
     setSubmittedToday(submitted);
+    const locked = loadChoicesLocked();
+    setChoicesLocked(locked);
     updateStats();
   }, []);
 
@@ -310,18 +336,22 @@ export default function Dashboard() {
       saveTomorrowQuests(quests); // Save current edits to tomorrow
       setQuests(loadQuests()); // Load today's quests
       setCompleted([false, false, false]); // Reset completed for today's view
+      const locked = loadChoicesLocked();
+      setChoicesLocked(locked);
       setViewingTomorrow(false);
     } else {
       // Switch to tomorrow
       saveQuests(quests); // Save current edits to today
       setQuests(loadTomorrowQuests()); // Load tomorrow's quests
       setCompleted([false, false, false]); // Tomorrow hasn't been completed yet
+      setChoicesLocked(false); // Tomorrow never has locked state
       setViewingTomorrow(true);
     }
   };
 
   const handleQuestTextChange = (questIndex: number, text: string) => {
     const newQuests = [...quests];
+    const oldText = newQuests[questIndex];
     newQuests[questIndex] = text;
     setQuests(newQuests);
 
@@ -330,6 +360,12 @@ export default function Dashboard() {
       const newErrors = [...errors];
       newErrors[questIndex] = '';
       setErrors(newErrors);
+    }
+
+    // If text changed and choices were locked, unlock them
+    if (choicesLocked && oldText !== text) {
+      setChoicesLocked(false);
+      saveChoicesLocked(false);
     }
 
     // Save to appropriate storage based on view
@@ -371,6 +407,12 @@ export default function Dashboard() {
         setQuests([today.quest_1_text || '', today.quest_2_text || '', today.quest_3_text || '']);
         setCompleted([today.quest_1_completed || false, today.quest_2_completed || false, today.quest_3_completed || false]);
         saveQuests([today.quest_1_text || '', today.quest_2_text || '', today.quest_3_text || '']);
+
+        // Sync choices locked state
+        const locked = today.choices_locked || false;
+        setChoicesLocked(locked);
+        saveChoicesLocked(locked);
+
         if (today.submitted) {
           const todayKey = getTodayKey();
           localStorage.setItem(SUBMISSION_KEY, JSON.stringify({
@@ -433,6 +475,32 @@ export default function Dashboard() {
       // All slots filled - notify user
       const dayLabel = viewingTomorrow ? "tomorrow's" : "today's";
       alert(`Your Top 3 for ${dayLabel} are full! Complete or clear one first.`);
+    }
+  };
+
+  const handleLockChoices = async () => {
+    setLockingChoices(true);
+    try {
+      if (isAuthenticated) {
+        // First sync current quests to server
+        await syncToServer();
+
+        // Then lock the choices
+        const result = await apiClient.lockChoices();
+        if (result.error) {
+          throw new Error(result.error);
+        }
+      }
+
+      // Update local state
+      setChoicesLocked(true);
+      saveChoicesLocked(true);
+
+    } catch (error) {
+      console.error('Failed to lock choices:', error);
+      alert('Failed to lock in choices. Please try again.');
+    } finally {
+      setLockingChoices(false);
     }
   };
 
@@ -643,25 +711,54 @@ export default function Dashboard() {
               )}
 
               {!viewingTomorrow && (
-                <button
-                  onClick={handleSubmit}
-                  disabled={submitting || submittedToday || completed.filter(c => c).length < 3}
-                  className={`mt-6 w-full py-3 px-6 rounded-lg font-semibold transition-all ${
-                    submittedToday
-                      ? 'bg-success-500 text-white cursor-not-allowed'
+                <>
+                  {/* Lock In Choices Button */}
+                  {!submittedToday && !choicesLocked && (
+                    <button
+                      onClick={handleLockChoices}
+                      disabled={lockingChoices || quests.filter(q => q.trim()).length < 3}
+                      className={`mt-6 w-full py-3 px-6 rounded-lg font-semibold transition-all ${
+                        quests.filter(q => q.trim()).length === 3
+                          ? 'bg-success-600 hover:bg-success-700 text-white shadow-md hover:shadow-lg'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      {lockingChoices
+                        ? 'Locking in...'
+                        : quests.filter(q => q.trim()).length === 3
+                        ? 'Lock In My Choices'
+                        : 'Fill all 3 to lock in'}
+                    </button>
+                  )}
+
+                  {/* Success State - Choices Locked */}
+                  {!submittedToday && choicesLocked && (
+                    <div className="mt-6 w-full py-3 px-6 rounded-lg font-semibold bg-success-500 text-white cursor-default shadow-md text-center">
+                      ✓ Choices Locked
+                    </div>
+                  )}
+
+                  {/* Final Lock It In Button */}
+                  <button
+                    onClick={handleSubmit}
+                    disabled={submitting || submittedToday || completed.filter(c => c).length < 3}
+                    className={`mt-6 w-full py-3 px-6 rounded-lg font-semibold transition-all ${
+                      submittedToday
+                        ? 'bg-success-500 text-white cursor-not-allowed'
+                        : completed.filter(c => c).length === 3
+                        ? 'bg-success-600 hover:bg-success-700 text-white shadow-md hover:shadow-lg'
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    {submitting
+                      ? 'Locking in...'
+                      : submittedToday
+                      ? '✓ Locked In'
                       : completed.filter(c => c).length === 3
-                      ? 'bg-success-600 hover:bg-success-700 text-white shadow-md hover:shadow-lg'
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  {submitting
-                    ? 'Locking in...'
-                    : submittedToday
-                    ? '✓ Locked In'
-                    : completed.filter(c => c).length === 3
-                    ? 'Lock It In'
-                    : 'Pick your 3 first'}
-                </button>
+                      ? 'Lock It In'
+                      : 'Pick your 3 first'}
+                  </button>
+                </>
               )}
               {viewingTomorrow && (
                 <div className="mt-6 p-4 bg-primary-50 rounded-lg text-center">
