@@ -7,6 +7,7 @@ import HeatMeter from '@/components/dashboard/HeatMeter';
 
 export default function Landing() {
   const [streak, setStreak] = useState(0);
+  const [momentumHours, setMomentumHours] = useState(0);
   const [totalXP, setTotalXP] = useState(0);
   const [heatLevel, setHeatLevel] = useState(0);
   const [quests, setQuests] = useState(['', '', '']);
@@ -90,6 +91,7 @@ export default function Landing() {
     const dates = Object.keys(data).sort().reverse();
     let newTotalXP = 0;
     const today = new Date();
+    let streakStartDate: Date | null = null;
 
     for (const dateKey of dates) {
       const completedCount = data[dateKey].completed.filter((c: boolean) => c).length;
@@ -106,6 +108,7 @@ export default function Landing() {
         const completedCount = data[dateKey].completed.filter((c: boolean) => c).length;
         if (completedCount === 3) {
           newStreak++;
+          streakStartDate = new Date(checkDate);
         } else {
           break;
         }
@@ -117,6 +120,17 @@ export default function Landing() {
     const calculatedHeatLevel = calculateHeatLevel(data, newStreak);
     setHeatLevel(calculatedHeatLevel);
     setStreak(newStreak);
+    if (newStreak > 0 && streakStartDate) {
+      const startOfDay = new Date(streakStartDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const hours = Math.max(
+        0,
+        Math.floor((Date.now() - startOfDay.getTime()) / (1000 * 60 * 60))
+      );
+      setMomentumHours(hours);
+    } else {
+      setMomentumHours(0);
+    }
     setTotalXP(newTotalXP);
   }, []);
 
@@ -237,8 +251,8 @@ export default function Landing() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Momentum</p>
-                    <p className="text-3xl font-bold text-gray-900">{streak}</p>
-                    <p className="text-xs text-gray-500 mt-1">days rolling</p>
+                    <p className="text-3xl font-bold text-gray-900">{momentumHours}</p>
+                    <p className="text-xs text-gray-500 mt-1">hours rolling</p>
                   </div>
                   <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
                     <span className="text-2xl">🔥</span>

@@ -191,8 +191,10 @@ class TestQuestProgress:
         assert response.status_code == status.HTTP_200_OK
         assert 'streak' in response.data
         assert 'total_xp' in response.data
+        assert 'momentum_hours' in response.data
         assert response.data['streak'] >= 1
         assert response.data['total_xp'] >= 9  # 3 quests * 3 days
+        assert response.data['momentum_hours'] >= 48  # at least 2 full days of hours
 
 
 @pytest.mark.django_db

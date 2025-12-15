@@ -59,8 +59,11 @@ export default function Navbar({ user, isAuthenticated, onLogout }: NavbarProps)
 
             {/* Desktop menu */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link href="/#features" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Features
+              <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
+                How It Works
+              </Link>
+              <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
+                About
               </Link>
               <Link href="/pricing" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Pricing
@@ -141,11 +144,18 @@ export default function Navbar({ user, isAuthenticated, onLogout }: NavbarProps)
       >
         <div className="px-4 py-6 space-y-4">
           <Link
-            href="/#features"
+            href="/how-it-works"
             className="block py-2 text-gray-600 hover:text-gray-900 transition-colors"
             onClick={handleMobileLinkClick}
           >
-            Features
+            How It Works
+          </Link>
+          <Link
+            href="/about"
+            className="block py-2 text-gray-600 hover:text-gray-900 transition-colors"
+            onClick={handleMobileLinkClick}
+          >
+            About
           </Link>
           <Link
             href="/pricing"

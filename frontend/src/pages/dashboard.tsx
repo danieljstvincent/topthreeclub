@@ -12,6 +12,7 @@ interface User {
   id: number;
   username: string;
   email: string;
+  date_joined?: string;
 }
 
 interface QuestProgress {
@@ -26,11 +27,17 @@ interface QuestProgress {
   submitted_at?: string;
 }
 
+interface QuestHistoryEntry {
+  date: string;
+  completed: boolean;
+}
+
 export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [momentumHours, setMomentumHours] = useState(0);
   const [totalXP, setTotalXP] = useState(0);
   const [heatLevel, setHeatLevel] = useState(0);
   const [quests, setQuests] = useState(['', '', '']);
@@ -41,6 +48,8 @@ export default function Dashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [brainDumpOpen, setBrainDumpOpen] = useState(false);
   const [viewingTomorrow, setViewingTomorrow] = useState(false);
+  const [questHistory, setQuestHistory] = useState<QuestHistoryEntry[]>([]);
+  const [accountCreatedDate, setAccountCreatedDate] = useState<string>('');
 
   const STORAGE_KEY = 'topthree_data';
   const QUESTS_KEY = 'topthree_quests';
@@ -163,6 +172,21 @@ export default function Dashboard() {
     }
   };
 
+  const fetchQuestHistory = useCallback(async () => {
+    try {
+      const historyResult = await apiClient.getQuestHistory();
+      if (historyResult.data) {
+        setQuestHistory(historyResult.data);
+      }
+    } catch (error) {
+      // If quest history fails, leave defaults; dashboard still functions
+    }
+
+    if (user?.date_joined) {
+      setAccountCreatedDate(user.date_joined);
+    }
+  }, [user]);
+
   function checkSubmittedToday() {
     if (typeof window === 'undefined') return false;
     const submissionData = localStorage.getItem(SUBMISSION_KEY);
@@ -184,11 +208,18 @@ export default function Dashboard() {
     updateStats();
   }, []);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchQuestHistory();
+    }
+  }, [isAuthenticated, fetchQuestHistory]);
+
   const updateStats = useCallback(() => {
     const data = loadData();
     const dates = Object.keys(data).sort().reverse();
     let newTotalXP = 0;
     const today = new Date();
+    let streakStartDate: Date | null = null;
 
     for (const dateKey of dates) {
       const completedCount = data[dateKey].completed.filter((c: boolean) => c).length;
@@ -205,6 +236,7 @@ export default function Dashboard() {
         const completedCount = data[dateKey].completed.filter((c: boolean) => c).length;
         if (completedCount === 3) {
           newStreak++;
+          streakStartDate = new Date(checkDate);
         } else {
           break;
         }
@@ -218,6 +250,17 @@ export default function Dashboard() {
     setHeatLevel(calculatedHeatLevel);
 
     setStreak(newStreak);
+    if (newStreak > 0 && streakStartDate) {
+      const startOfDay = new Date(streakStartDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const hours = Math.max(
+        0,
+        Math.floor((Date.now() - startOfDay.getTime()) / (1000 * 60 * 60))
+      );
+      setMomentumHours(hours);
+    } else {
+      setMomentumHours(0);
+    }
     setTotalXP(newTotalXP);
   }, []);
 
@@ -342,6 +385,14 @@ export default function Dashboard() {
       if (statsResult.data) {
         setStreak(statsResult.data.streak || 0);
         setTotalXP(statsResult.data.total_xp || 0);
+        const serverMomentumHours = statsResult.data.momentum_hours;
+        if (typeof serverMomentumHours === 'number') {
+          setMomentumHours(serverMomentumHours);
+        } else if (statsResult.data.streak) {
+          setMomentumHours(statsResult.data.streak * 24);
+        } else {
+          setMomentumHours(0);
+        }
       }
     } catch (error) {
       console.error('Failed to sync from server:', error);
@@ -442,8 +493,8 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Momentum</p>
-                    <p className="text-3xl font-bold text-gray-900">{streak}</p>
-                    <p className="text-xs text-gray-500 mt-1">days rolling</p>
+                    <p className="text-3xl font-bold text-gray-900">{momentumHours}</p>
+                    <p className="text-xs text-gray-500 mt-1">hours rolling</p>
                   </div>
                   <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
                     <span className="text-2xl">🔥</span>
@@ -484,6 +535,8 @@ export default function Dashboard() {
             <HeatMeter
               heatLevel={heatLevel}
               currentStreak={streak}
+              questHistory={questHistory}
+              accountCreatedDate={accountCreatedDate}
               className="mb-8"
             />
 

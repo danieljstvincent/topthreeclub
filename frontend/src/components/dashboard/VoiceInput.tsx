@@ -7,7 +7,8 @@ interface VoiceInputProps {
 
 export default function VoiceInput({ onTranscript, className = '' }: VoiceInputProps) {
   const [isListening, setIsListening] = useState(false);
-  const [isSupported, setIsSupported] = useState(true);
+  // Default to false to avoid briefly showing the button before support is detected.
+  const [isSupported, setIsSupported] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function VoiceInput({ onTranscript, className = '' }: VoiceInputP
   }, []);
 
   const toggleListening = () => {
-    if (!recognition) return;
+    if (!recognition || !isSupported) return;
 
     if (isListening) {
       recognition.stop();
