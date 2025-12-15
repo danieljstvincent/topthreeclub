@@ -61,7 +61,7 @@ This guide will help you set up Google and Facebook OAuth authentication for Top
 Add to your `backend/.env` file:
 
 ```bash
-GOOGLE_CLIENT_ID=your-google-client-id-here.apps.googleusercontent.com
+GOOGLE_CLIENT_ID=your-googlt-client-id-here.apps.googleuserconten.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret-here
 ```
 

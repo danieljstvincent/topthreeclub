@@ -33,6 +33,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -57,16 +58,28 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'topthree'),
-        'USER': os.environ.get('DB_USER', 'topthree'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'topthree'),
-        'HOST': os.environ.get('DB_HOST', 'db'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+# Database configuration - supports both SQLite and PostgreSQL
+DB_ENGINE = os.environ.get('DB_ENGINE', 'postgresql')
+
+if DB_ENGINE == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    # PostgreSQL (default) - works with Supabase
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'postgres'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'db'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
