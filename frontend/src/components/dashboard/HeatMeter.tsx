@@ -22,6 +22,20 @@ export default function HeatMeter({ heatLevel, currentStreak, questHistory, acco
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   };
 
+  // Consider today complete if quest history marks today as completed,
+  // otherwise fall back to heatLevel > 0 (streak implies today done).
+  const isTodayCompleted = (() => {
+    const today = new Date();
+    const todayKey = formatDateString(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      today.getDate()
+    );
+    const todayInHistory = questHistory?.find((q) => q.date === todayKey);
+    if (todayInHistory) return todayInHistory.completed;
+    return heatLevel > 0;
+  })();
+
   // Determine color for each box based on quest history and position
   const getBoxColor = (index: number): string => {
     const dateInfo = getDateForBox(index);
@@ -96,10 +110,22 @@ export default function HeatMeter({ heatLevel, currentStreak, questHistory, acco
           return (
             <div key={index} className="flex-1 flex flex-col items-center relative">
               <div
-                className={`w-full h-12 rounded ${getBoxColor(index)} transition-all duration-300`}
+                className={`w-full h-12 rounded ${getBoxColor(index)} transition-all duration-300 relative overflow-hidden`}
                 title={dayDescriptor}
                 aria-label={dayDescriptor}
-              />
+              >
+                {index === 5 && (
+                  <div
+                    className="absolute inset-0 bg-white/20"
+                    style={{
+                      transformOrigin: 'left center',
+                      transform: isTodayCompleted ? 'scaleX(1)' : 'scaleX(0)',
+                      transition: 'transform 2500ms ease-out',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                )}
+              </div>
               {index === 5 && (
                 <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
                   <div className="w-2 h-2 bg-primary-600 rounded-full" />
