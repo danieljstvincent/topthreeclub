@@ -35,6 +35,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -57,16 +58,35 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'topthree'),
-        'USER': os.environ.get('DB_USER', 'topthree'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'topthree'),
-        'HOST': os.environ.get('DB_HOST', 'db'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+# Database configuration
+# Defaults to PostgreSQL, but can use SQLite for local development
+DB_ENGINE = os.environ.get('DB_ENGINE', 'postgresql')
+DB_NAME = os.environ.get('DB_NAME', 'topthree')
+DB_USER = os.environ.get('DB_USER', 'topthree')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'topthree')
+DB_HOST = os.environ.get('DB_HOST', 'localhost')
+DB_PORT = os.environ.get('DB_PORT', '5432')
+
+if DB_ENGINE == 'sqlite':
+    # Use SQLite for local development (easier setup)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    # Use PostgreSQL (default for production-like environments)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': DB_NAME,
+            'USER': DB_USER,
+            'PASSWORD': DB_PASSWORD,
+            'HOST': DB_HOST,
+            'PORT': DB_PORT,
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

@@ -71,7 +71,72 @@ Make sure you have the following installed:
 - **Node.js 18+**
 - **npm 9+**
 
-### ⚡ Quick Start
+### ⚡ Quick Start (Automated)
+
+We provide automated setup scripts to get you started quickly:
+
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd topthreeclub
+
+# Run the setup script (first time only)
+./setup.sh
+```
+
+The setup script will:
+- ✅ Create Python virtual environment
+- ✅ Install all backend dependencies
+- ✅ Run database migrations
+- ✅ Start both backend and frontend servers
+
+After the initial setup, use the quick start script:
+
+```bash
+# Start both servers
+./start.sh
+```
+
+Press `Ctrl+C` to stop both servers.
+
+### 🔐 OAuth Setup (Required for Social Login)
+
+Before OAuth login works, you need to:
+
+1. **Get Google OAuth Credentials:**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a project and enable Google+ API
+   - Create OAuth 2.0 credentials
+   - Add redirect URI: `http://localhost:8000/accounts/google/login/callback/`
+
+2. **Get Facebook OAuth Credentials:**
+   - Go to [Facebook Developers](https://developers.facebook.com/)
+   - Create an app and add Facebook Login product
+   - Add redirect URI: `http://localhost:8000/accounts/facebook/login/callback/`
+   - Add `localhost` to App Domains
+
+3. **Add credentials to `backend/.env`:**
+   ```bash
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   FACEBOOK_APP_ID=your-facebook-app-id
+   FACEBOOK_APP_SECRET=your-facebook-app-secret
+   ```
+
+4. **Create Django superuser:**
+   ```bash
+   cd backend
+   source venv/bin/activate
+   python manage.py createsuperuser
+   ```
+
+5. **Configure Site domain:**
+   - Go to http://localhost:8000/admin/
+   - Navigate to **Sites** and change domain to `localhost:8000`
+
+📖 **For detailed OAuth setup instructions, see [OAUTH_SETUP.md](./OAUTH_SETUP.md)**
+
+### 📝 Manual Setup (Alternative)
 
 #### 1️⃣ Backend Setup (Django)
 
@@ -86,12 +151,12 @@ python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install -r requirements/development.txt
+pip install -r requirements/base.txt
 
 # Run migrations
 python manage.py migrate
 
-# (Optional) Create admin superuser
+# Create admin superuser
 python manage.py createsuperuser
 
 # Start Django server
@@ -126,27 +191,40 @@ npm run dev
 
 ### Backend (`backend/.env`)
 
-```bash
-DEBUG=True
-SECRET_KEY=your-secret-key-for-development
-DATABASE_URL=sqlite:///db.sqlite3
-ALLOWED_HOSTS=localhost,127.0.0.1
-CORS_ALLOWED_ORIGINS=http://localhost:3000
+Create a `.env` file in the `backend/` directory:
 
-# Google OAuth (Optional)
-GOOGLE_CLIENT_ID=your-google-client-id
+```bash
+# Google OAuth Credentials
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Facebook OAuth (Optional)
+# Facebook OAuth Credentials
 FACEBOOK_APP_ID=your-facebook-app-id
 FACEBOOK_APP_SECRET=your-facebook-app-secret
+
+# Frontend URL for OAuth redirects
+FRONTEND_URL=http://localhost:3000
+
+# Database Configuration (SQLite for development)
+DB_ENGINE=sqlite
+
+# Django Secret Key
+SECRET_KEY=your-secret-key-here
+
+# Debug Mode (defaults to True in development)
+DEBUG=True
 ```
 
 ### Frontend (`frontend/.env.local`)
 
+Create a `.env.local` file in the `frontend/` directory:
+
 ```bash
+# Backend API URL
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
+
+**Note:** The setup script automatically creates these files with the correct structure. You just need to add your OAuth credentials.
 
 ---
 
@@ -189,6 +267,13 @@ pytest
 | `GET` | `/api/users/me/` | Get current user info |
 | `GET` | `/api/users/social-auth-urls/` | Get OAuth URLs |
 
+### 🌐 OAuth Endpoints
+
+| Provider | Login URL | Callback URL |
+|----------|-----------|--------------|
+| Google | `/accounts/google/login/` | `/accounts/google/login/callback/` |
+| Facebook | `/accounts/facebook/login/` | `/accounts/facebook/login/callback/` |
+
 ### 📋 Quests
 
 | Method | Endpoint | Description |
@@ -199,6 +284,89 @@ pytest
 | `GET` | `/api/users/quests/history/` | Get quest history |
 | `GET` | `/api/users/quests/stats/` | Get user statistics |
 | `POST` | `/api/users/quests/bulk-sync/` | Bulk sync quests |
+
+---
+
+## 🔧 Troubleshooting
+
+### OAuth Login Not Working
+
+**"Redirect URI mismatch" error:**
+- Verify redirect URIs in Google/Facebook console match exactly (including trailing slash)
+- Google: `http://localhost:8000/accounts/google/login/callback/`
+- Facebook: `http://localhost:8000/accounts/facebook/login/callback/`
+- Check that Site domain in Django admin is set to `localhost:8000`
+
+**"App Not Set Up" (Facebook):**
+- Add `localhost` to App Domains in Facebook app settings
+- Add Privacy Policy and Terms URLs (can be placeholders for development)
+
+**"Access blocked" (Google):**
+- Add your email as a test user in OAuth consent screen
+- Verify redirect URI is correct
+- Ensure Google+ API is enabled
+
+### Server Won't Start
+
+**Django: "No module named 'django'":**
+- Activate virtual environment: `source backend/venv/bin/activate`
+- Reinstall dependencies: `pip install -r requirements/base.txt`
+
+**Frontend: Port already in use:**
+- Kill existing process: `lsof -ti:3000 | xargs kill`
+- Or use different port: `npm run dev -- -p 3001`
+
+### Database Issues
+
+**Migration errors:**
+```bash
+cd backend
+source venv/bin/activate
+python manage.py migrate --run-syncdb
+```
+
+**Reset database (development only):**
+```bash
+rm backend/db.sqlite3
+python manage.py migrate
+python manage.py createsuperuser
+```
+
+For more detailed OAuth setup instructions, see [OAUTH_SETUP.md](./OAUTH_SETUP.md)
+
+---
+
+## 🛠️ Useful Scripts
+
+The project includes helpful scripts in the root directory:
+
+### `setup.sh` - First-time Setup
+Automates initial project setup:
+- Creates Python virtual environment
+- Installs all dependencies
+- Runs database migrations
+- Checks for superuser
+- Starts both servers
+
+```bash
+./setup.sh
+```
+
+### `start.sh` - Quick Start
+Start both backend and frontend servers (after initial setup):
+
+```bash
+./start.sh
+```
+
+Both scripts support graceful shutdown with `Ctrl+C`.
+
+---
+
+## 📚 Documentation
+
+- **[OAUTH_SETUP.md](./OAUTH_SETUP.md)** - Complete OAuth setup guide with step-by-step instructions for Google and Facebook
+- **[README.md](./README.md)** - This file, project overview and quick start guide
 
 ---
 
