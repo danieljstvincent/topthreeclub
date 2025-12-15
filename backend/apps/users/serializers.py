@@ -54,6 +54,7 @@ class QuestProgressSerializer(serializers.ModelSerializer):
         model = QuestProgress
         fields = ('id', 'date', 'quest_1_text', 'quest_2_text', 'quest_3_text',
                   'quest_1_completed', 'quest_2_completed', 'quest_3_completed',
-                  'submitted', 'submitted_at', 'created_at', 'updated_at')
-        read_only_fields = ('id', 'submitted_at', 'created_at', 'updated_at')
+                  'submitted', 'submitted_at', 'choices_locked', 'choices_locked_at',
+                  'created_at', 'updated_at')
+        read_only_fields = ('id', 'submitted_at', 'choices_locked_at', 'created_at', 'updated_at')
 
