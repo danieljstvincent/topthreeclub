@@ -31,8 +31,29 @@ class ApiClient {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        // Handle different error formats
+        let errorMessage = errorData.error || errorData.detail;
+        
+        // If there are field-specific errors, format them nicely
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          const fieldErrors = Object.entries(errorData.errors)
+            .map(([field, message]) => `${field}: ${message}`)
+            .join(', ');
+          errorMessage = fieldErrors || errorMessage;
+        }
+        
+        // If errorData is a string or array, use it directly
+        if (!errorMessage && typeof errorData === 'string') {
+          errorMessage = errorData;
+        }
+        
+        // Fallback to status code
+        if (!errorMessage) {
+          errorMessage = `HTTP ${response.status}`;
+        }
+        
         return {
-          error: errorData.error || errorData.detail || `HTTP ${response.status}`,
+          error: errorMessage,
         };
       }
 
@@ -157,6 +178,29 @@ class ApiClient {
 
   async getArchivedIdeas(): Promise<ApiResponse<BrainDumpIdea[]>> {
     return this.request('/api/users/brain-dump/archived/');
+  }
+
+  // Password reset methods
+  async requestPasswordReset(emailOrUsername: string): Promise<ApiResponse<any>> {
+    return this.request('/api/users/password-reset/', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        email: emailOrUsername.includes('@') ? emailOrUsername : undefined,
+        username: emailOrUsername.includes('@') ? undefined : emailOrUsername,
+      }),
+    });
+  }
+
+  async confirmPasswordReset(
+    uid: string,
+    token: string,
+    password: string,
+    password2: string
+  ): Promise<ApiResponse<any>> {
+    return this.request('/api/users/password-reset-confirm/', {
+      method: 'POST',
+      body: JSON.stringify({ uid, token, password, password2 }),
+    });
   }
 }
 

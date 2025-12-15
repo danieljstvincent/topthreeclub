@@ -82,7 +82,16 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
           />
         </div>
         <div>
+          <div className="flex items-center justify-between mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <a href="/forgot-password" className="text-sm text-gray-600 hover:text-gray-900 underline">
+              Forgot password?
+            </a>
+          </div>
           <input
+            id="password"
             type="password"
             placeholder="Password"
             value={password}
