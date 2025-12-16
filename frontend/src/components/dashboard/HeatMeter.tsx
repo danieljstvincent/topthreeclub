@@ -126,11 +126,6 @@ export default function HeatMeter({ heatLevel, currentStreak, questHistory, acco
                   />
                 )}
               </div>
-              {index === 5 && (
-                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                  <div className="w-2 h-2 bg-primary-600 rounded-full" />
-                </div>
-              )}
               <div className="mt-2 text-center">
                 <p className="text-xs font-semibold text-gray-700">{dateInfo.day}</p>
                 <p className="text-xs text-gray-500">{dateInfo.month}</p>
