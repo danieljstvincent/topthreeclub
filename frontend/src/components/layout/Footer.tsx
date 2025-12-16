@@ -72,6 +72,11 @@ export default function Footer() {
                   Terms
                 </Link>
               </li>
+              <li>
+                <Link href="/data" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+                  Data
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
