@@ -69,3 +69,4 @@ LOGGING['handlers']['file'] = {
 LOGGING['root']['handlers'] = ['console', 'file']
 LOGGING['loggers']['django']['handlers'] = ['console', 'file']
 
+
