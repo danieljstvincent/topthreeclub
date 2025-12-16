@@ -100,32 +100,56 @@ def social_auth_urls_view(request):
     try:
         from django.contrib.sites.models import Site
         
-        # Try to get site, but fallback to request if site not configured
-        try:
-            site = Site.objects.get_current()
-            base_url = f"http://{site.domain}" if not site.domain.startswith('http') else site.domain
-        except:
-            base_url = None
+        base_url = None
+        DEBUG = settings.DEBUG
         
-        # Use request to build URL (more reliable)
-        if request:
+        # Use request to build URL (most reliable - uses actual request domain)
+        if request and request.get_host():
             scheme = request.scheme
             host = request.get_host()
-            base_url = f"{scheme}://{host}"
-        elif not base_url:
-            # Fallback
-            base_url = 'http://localhost:8000'
+            # Only use request host if it's not localhost (for production)
+            if 'localhost' not in host and '127.0.0.1' not in host:
+                base_url = f"{scheme}://{host}"
+            else:
+                # If localhost, try Site model or env var
+                try:
+                    site = Site.objects.get_current()
+                    if site.domain and 'localhost' not in site.domain and '127.0.0.1' not in site.domain:
+                        if site.domain.startswith('http'):
+                            base_url = site.domain
+                        else:
+                            scheme = 'https' if not DEBUG else 'http'
+                            base_url = f"{scheme}://{site.domain}"
+                    else:
+                        # Site is localhost, try env var or use request host
+                        base_url = os.environ.get('BACKEND_URL', f"{scheme}://{host}")
+                except:
+                    base_url = os.environ.get('BACKEND_URL', f"{scheme}://{host}")
+        else:
+            # No request, try Site model or env var, fallback to localhost
+            try:
+                site = Site.objects.get_current()
+                if site.domain and 'localhost' not in site.domain and '127.0.0.1' not in site.domain:
+                    if site.domain.startswith('http'):
+                        base_url = site.domain
+                    else:
+                        scheme = 'https' if not DEBUG else 'http'
+                        base_url = f"{scheme}://{site.domain}"
+                else:
+                    base_url = os.environ.get('BACKEND_URL', 'http://localhost:8000')
+            except:
+                base_url = os.environ.get('BACKEND_URL', 'http://localhost:8000')
         
         return Response({
             'google': f"{base_url}/accounts/google/login/",
             'facebook': f"{base_url}/accounts/facebook/login/",
         })
     except Exception as e:
-        # Return URLs even if there's an error
-        base_url = request.get_host() if request else 'http://localhost:8000'
-        scheme = request.scheme if request else 'http'
-        base_url = f"{scheme}://{base_url}" if not base_url.startswith('http') else base_url
-        
+        # Fallback to localhost if everything fails
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to generate social auth URLs: {e}, using localhost fallback")
+        base_url = os.environ.get('BACKEND_URL', 'http://localhost:8000')
         return Response({
             'google': f"{base_url}/accounts/google/login/",
             'facebook': f"{base_url}/accounts/facebook/login/",
