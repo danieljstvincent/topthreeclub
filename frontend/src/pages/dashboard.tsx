@@ -40,7 +40,11 @@ export default function Dashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [streak, setStreak] = useState(0);
   const [momentumHours, setMomentumHours] = useState(0);
+  const [displayedMomentumHours, setDisplayedMomentumHours] = useState(0);
+  const [isAnimatingMomentum, setIsAnimatingMomentum] = useState(false);
   const [totalXP, setTotalXP] = useState(0);
+  const [displayedTotalXP, setDisplayedTotalXP] = useState(0);
+  const [isAnimatingXP, setIsAnimatingXP] = useState(false);
   const [heatLevel, setHeatLevel] = useState(0);
   const [quests, setQuests] = useState(['', '', '']);
   const [completed, setCompleted] = useState([false, false, false]);
@@ -289,6 +293,102 @@ export default function Dashboard() {
     }
     setTotalXP(newTotalXP);
   }, []);
+
+  // Slot machine animation effect for momentum hours
+  useEffect(() => {
+    if (momentumHours === 0) {
+      setDisplayedMomentumHours(0);
+      setIsAnimatingMomentum(false);
+      return;
+    }
+
+    // Only animate on first load or when value significantly changes
+    const shouldAnimate = displayedMomentumHours === 0 && momentumHours > 0;
+
+    if (!shouldAnimate) {
+      setDisplayedMomentumHours(momentumHours);
+      return;
+    }
+
+    setIsAnimatingMomentum(true);
+    let currentValue = 0;
+    const targetValue = momentumHours;
+
+    const animate = () => {
+      currentValue++;
+      const remaining = targetValue - currentValue;
+
+      setDisplayedMomentumHours(currentValue);
+
+      if (currentValue >= targetValue) {
+        setIsAnimatingMomentum(false);
+        return;
+      }
+
+      // Slow down when 7 or fewer numbers away
+      let delay;
+      if (remaining <= 7) {
+        // Progressively slower as we get closer
+        delay = 100 + (7 - remaining) * 50; // 100ms to 450ms
+      } else {
+        // Fast scrolling when more than 7 away
+        delay = 30;
+      }
+
+      setTimeout(animate, delay);
+    };
+
+    // Start the animation
+    setTimeout(animate, 30);
+  }, [momentumHours]);
+
+  // Slot machine animation effect for total XP
+  useEffect(() => {
+    if (totalXP === 0) {
+      setDisplayedTotalXP(0);
+      setIsAnimatingXP(false);
+      return;
+    }
+
+    // Only animate on first load or when value significantly changes
+    const shouldAnimate = displayedTotalXP === 0 && totalXP > 0;
+
+    if (!shouldAnimate) {
+      setDisplayedTotalXP(totalXP);
+      return;
+    }
+
+    setIsAnimatingXP(true);
+    let currentValue = 0;
+    const targetValue = totalXP;
+
+    const animate = () => {
+      currentValue++;
+      const remaining = targetValue - currentValue;
+
+      setDisplayedTotalXP(currentValue);
+
+      if (currentValue >= targetValue) {
+        setIsAnimatingXP(false);
+        return;
+      }
+
+      // Slow down when 7 or fewer numbers away
+      let delay;
+      if (remaining <= 7) {
+        // Progressively slower as we get closer
+        delay = 100 + (7 - remaining) * 50; // 100ms to 450ms
+      } else {
+        // Fast scrolling when more than 7 away
+        delay = 30;
+      }
+
+      setTimeout(animate, delay);
+    };
+
+    // Start the animation
+    setTimeout(animate, 30);
+  }, [totalXP]);
 
   const toggleQuest = (questIndex: number) => {
     const questText = quests[questIndex].trim();
@@ -561,7 +661,12 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Momentum</p>
-                    <p className="text-3xl font-bold text-gray-900">{momentumHours}</p>
+                    <p
+                      key={displayedMomentumHours}
+                      className={`text-3xl font-bold text-gray-900 ${isAnimatingMomentum ? 'animate-slot-roll' : ''}`}
+                    >
+                      {displayedMomentumHours}
+                    </p>
                     <p className="text-xs text-gray-500 mt-1">hours rolling</p>
                   </div>
                   <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
@@ -574,7 +679,12 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Total Wins</p>
-                    <p className="text-3xl font-bold text-gray-900">{totalXP}</p>
+                    <p
+                      key={displayedTotalXP}
+                      className={`text-3xl font-bold text-gray-900 ${isAnimatingXP ? 'animate-slot-roll' : ''}`}
+                    >
+                      {displayedTotalXP}
+                    </p>
                     <p className="text-xs text-gray-500 mt-1">tasks crushed</p>
                   </div>
                   <div className="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center">
