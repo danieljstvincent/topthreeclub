@@ -76,11 +76,17 @@ class LoginSerializer(serializers.Serializer):
 
 class QuestProgressSerializer(serializers.ModelSerializer):
     """Serializer for quest progress"""
+    completed = serializers.SerializerMethodField()
+
     class Meta:
         model = QuestProgress
         fields = ('id', 'date', 'quest_1_text', 'quest_2_text', 'quest_3_text',
                   'quest_1_completed', 'quest_2_completed', 'quest_3_completed',
                   'submitted', 'submitted_at', 'choices_locked', 'choices_locked_at',
-                  'created_at', 'updated_at')
-        read_only_fields = ('id', 'submitted_at', 'choices_locked_at', 'created_at', 'updated_at')
+                  'created_at', 'updated_at', 'completed')
+        read_only_fields = ('id', 'submitted_at', 'choices_locked_at', 'created_at', 'updated_at', 'completed')
+
+    def get_completed(self, obj):
+        """Return True if all three quests are completed"""
+        return obj.quest_1_completed and obj.quest_2_completed and obj.quest_3_completed
 

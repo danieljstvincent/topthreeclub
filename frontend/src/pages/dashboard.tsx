@@ -40,7 +40,11 @@ export default function Dashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [streak, setStreak] = useState(0);
   const [momentumHours, setMomentumHours] = useState(0);
+  const [displayedMomentumHours, setDisplayedMomentumHours] = useState(0);
+  const [isAnimatingMomentum, setIsAnimatingMomentum] = useState(false);
   const [totalXP, setTotalXP] = useState(0);
+  const [displayedTotalXP, setDisplayedTotalXP] = useState(0);
+  const [isAnimatingXP, setIsAnimatingXP] = useState(false);
   const [heatLevel, setHeatLevel] = useState(0);
   const [quests, setQuests] = useState(['', '', '']);
   const [completed, setCompleted] = useState([false, false, false]);
@@ -289,6 +293,102 @@ export default function Dashboard() {
     }
     setTotalXP(newTotalXP);
   }, []);
+
+  // Slot machine animation effect for momentum hours
+  useEffect(() => {
+    if (momentumHours === 0) {
+      setDisplayedMomentumHours(0);
+      setIsAnimatingMomentum(false);
+      return;
+    }
+
+    // Only animate on first load or when value significantly changes
+    const shouldAnimate = displayedMomentumHours === 0 && momentumHours > 0;
+
+    if (!shouldAnimate) {
+      setDisplayedMomentumHours(momentumHours);
+      return;
+    }
+
+    setIsAnimatingMomentum(true);
+    let currentValue = 0;
+    const targetValue = momentumHours;
+
+    const animate = () => {
+      currentValue++;
+      const remaining = targetValue - currentValue;
+
+      setDisplayedMomentumHours(currentValue);
+
+      if (currentValue >= targetValue) {
+        setIsAnimatingMomentum(false);
+        return;
+      }
+
+      // Slow down when 7 or fewer numbers away
+      let delay;
+      if (remaining <= 7) {
+        // Progressively slower as we get closer
+        delay = 100 + (7 - remaining) * 50; // 100ms to 450ms
+      } else {
+        // Fast scrolling when more than 7 away
+        delay = 30;
+      }
+
+      setTimeout(animate, delay);
+    };
+
+    // Start the animation
+    setTimeout(animate, 30);
+  }, [momentumHours]);
+
+  // Slot machine animation effect for total XP
+  useEffect(() => {
+    if (totalXP === 0) {
+      setDisplayedTotalXP(0);
+      setIsAnimatingXP(false);
+      return;
+    }
+
+    // Only animate on first load or when value significantly changes
+    const shouldAnimate = displayedTotalXP === 0 && totalXP > 0;
+
+    if (!shouldAnimate) {
+      setDisplayedTotalXP(totalXP);
+      return;
+    }
+
+    setIsAnimatingXP(true);
+    let currentValue = 0;
+    const targetValue = totalXP;
+
+    const animate = () => {
+      currentValue++;
+      const remaining = targetValue - currentValue;
+
+      setDisplayedTotalXP(currentValue);
+
+      if (currentValue >= targetValue) {
+        setIsAnimatingXP(false);
+        return;
+      }
+
+      // Slow down when 7 or fewer numbers away
+      let delay;
+      if (remaining <= 7) {
+        // Progressively slower as we get closer
+        delay = 100 + (7 - remaining) * 50; // 100ms to 450ms
+      } else {
+        // Fast scrolling when more than 7 away
+        delay = 30;
+      }
+
+      setTimeout(animate, delay);
+    };
+
+    // Start the animation
+    setTimeout(animate, 30);
+  }, [totalXP]);
 
   const toggleQuest = (questIndex: number) => {
     const questText = quests[questIndex].trim();
@@ -561,7 +661,12 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Momentum</p>
-                    <p className="text-3xl font-bold text-gray-900">{momentumHours}</p>
+                    <p
+                      key={displayedMomentumHours}
+                      className={`text-3xl font-bold text-gray-900 ${isAnimatingMomentum ? 'animate-slot-roll' : ''}`}
+                    >
+                      {displayedMomentumHours}
+                    </p>
                     <p className="text-xs text-gray-500 mt-1">hours rolling</p>
                   </div>
                   <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
@@ -574,7 +679,12 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Total Wins</p>
-                    <p className="text-3xl font-bold text-gray-900">{totalXP}</p>
+                    <p
+                      key={displayedTotalXP}
+                      className={`text-3xl font-bold text-gray-900 ${isAnimatingXP ? 'animate-slot-roll' : ''}`}
+                    >
+                      {displayedTotalXP}
+                    </p>
                     <p className="text-xs text-gray-500 mt-1">tasks crushed</p>
                   </div>
                   <div className="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center">
@@ -607,6 +717,58 @@ export default function Dashboard() {
               accountCreatedDate={accountCreatedDate}
               className="mb-8"
             />
+
+            {/* Perfect Days - All 3 Tasks Completed */}
+            {questHistory.filter(q => q.completed).length > 0 && (
+              <div className="card p-6 mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">
+                      Perfect Days
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Days you completed all three tasks
+                    </p>
+                  </div>
+                  <div className="text-3xl font-bold text-success-600">
+                    {questHistory.filter(q => q.completed).length}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {questHistory
+                    .filter(q => q.completed)
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .map((entry) => {
+                      const date = new Date(entry.date);
+                      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                      return (
+                        <div
+                          key={entry.date}
+                          className="bg-success-50 border-2 border-success-200 rounded-lg p-3 text-center hover:bg-success-100 transition-colors"
+                        >
+                          <div className="text-xs text-success-700 font-medium mb-1">
+                            {dayNames[date.getDay()]}
+                          </div>
+                          <div className="text-2xl font-bold text-success-900">
+                            {date.getDate()}
+                          </div>
+                          <div className="text-xs text-success-700">
+                            {monthNames[date.getMonth()]}
+                          </div>
+                          <div className="text-xs text-success-600">
+                            {date.getFullYear()}
+                          </div>
+                          <div className="mt-2 text-lg">
+                            ✓
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
 
             {/* Your Top 3 */}
             <div className="card p-4 sm:p-6 lg:p-8 mb-8">

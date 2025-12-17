@@ -36,6 +36,35 @@ export default function HeatMeter({ heatLevel, currentStreak, questHistory, acco
     return heatLevel > 0;
   })();
 
+  // Calculate the heat level for a specific date based on streak at that time
+  const getHeatLevelForDate = (targetDateString: string): number => {
+    if (!questHistory || questHistory.length === 0) return 0;
+
+    const targetDate = new Date(targetDateString);
+    let consecutiveDays = 0;
+
+    // Count consecutive completed days working backwards from target date
+    for (let i = 0; i <= 10; i++) {
+      const checkDate = new Date(targetDate);
+      checkDate.setDate(targetDate.getDate() - i);
+      const checkDateString = formatDateString(
+        checkDate.getFullYear(),
+        checkDate.getMonth() + 1,
+        checkDate.getDate()
+      );
+
+      const questForDate = questHistory.find(q => q.date === checkDateString);
+      if (questForDate?.completed) {
+        consecutiveDays++;
+      } else {
+        break;
+      }
+    }
+
+    // Cap at level 5
+    return Math.min(consecutiveDays, 5);
+  };
+
   // Determine color for each box based on quest history and position
   const getBoxColor = (index: number): string => {
     const dateInfo = getDateForBox(index);
@@ -61,8 +90,9 @@ export default function HeatMeter({ heatLevel, currentStreak, questHistory, acco
     // Check quest history for this date
     const questForDate = questHistory?.find(q => q.date === dateString);
     if (questForDate?.completed) {
-      // Show colored based on current heat level if completed
-      return HEAT_COLORS[heatLevel as keyof typeof HEAT_COLORS];
+      // Calculate what the heat level was on that specific date
+      const historicalHeatLevel = getHeatLevelForDate(dateString);
+      return HEAT_COLORS[historicalHeatLevel as keyof typeof HEAT_COLORS];
     }
 
     // No submission on this date - gray

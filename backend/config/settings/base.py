@@ -204,6 +204,13 @@ SECURE_HSTS_PRELOAD = os.environ.get('SECURE_HSTS_PRELOAD', 'False') == 'True'
 SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False') == 'True'
 CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False') == 'True'
 
+# Stripe Settings
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+STRIPE_PREMIUM_MONTHLY_PRICE_ID = os.environ.get('STRIPE_PREMIUM_MONTHLY_PRICE_ID', '')
+STRIPE_PREMIUM_YEARLY_PRICE_ID = os.environ.get('STRIPE_PREMIUM_YEARLY_PRICE_ID', '')
+
 # Logging Configuration
 LOGGING = {
     'version': 1,

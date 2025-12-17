@@ -73,3 +73,24 @@
     @apply absolute bottom-full right-0 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none;
   }
 }
+
+@layer utilities {
+  /* Slot machine counter animation */
+  @keyframes slot-roll {
+    0% {
+      transform: translateY(10px);
+      opacity: 0.3;
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slot-roll {
+    animation: slot-roll 0.15s ease-out;
+  }
+}

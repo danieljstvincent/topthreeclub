@@ -18,5 +18,9 @@ urlpatterns = [
     path('quests/stats/', views.quest_stats_view, name='quest_stats'),
     path('quests/bulk-sync/', views.quest_bulk_sync_view, name='quest_bulk_sync'),
     path('account/delete/', views.delete_account_view, name='delete_account'),
+    path('subscription/', views.subscription_status_view, name='subscription_status'),
+    path('subscribe/', views.create_checkout_view, name='create_checkout'),
+    path('cancel-subscription/', views.cancel_subscription_view, name='cancel_subscription'),
+    path('webhook/', views.stripe_webhook_view, name='stripe_webhook'),
 ]
 
