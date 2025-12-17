@@ -608,6 +608,58 @@ export default function Dashboard() {
               className="mb-8"
             />
 
+            {/* Perfect Days - All 3 Tasks Completed */}
+            {questHistory.filter(q => q.completed).length > 0 && (
+              <div className="card p-6 mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">
+                      Perfect Days
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Days you completed all three tasks
+                    </p>
+                  </div>
+                  <div className="text-3xl font-bold text-success-600">
+                    {questHistory.filter(q => q.completed).length}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {questHistory
+                    .filter(q => q.completed)
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .map((entry) => {
+                      const date = new Date(entry.date);
+                      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                      return (
+                        <div
+                          key={entry.date}
+                          className="bg-success-50 border-2 border-success-200 rounded-lg p-3 text-center hover:bg-success-100 transition-colors"
+                        >
+                          <div className="text-xs text-success-700 font-medium mb-1">
+                            {dayNames[date.getDay()]}
+                          </div>
+                          <div className="text-2xl font-bold text-success-900">
+                            {date.getDate()}
+                          </div>
+                          <div className="text-xs text-success-700">
+                            {monthNames[date.getMonth()]}
+                          </div>
+                          <div className="text-xs text-success-600">
+                            {date.getFullYear()}
+                          </div>
+                          <div className="mt-2 text-lg">
+                            ✓
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+
             {/* Your Top 3 */}
             <div className="card p-4 sm:p-6 lg:p-8 mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">

@@ -18,8 +18,9 @@ from datetime import date, timedelta, datetime
 from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.providers.google.views import oauth2_login
 from allauth.socialaccount.providers.facebook.views import oauth2_login as fb_oauth2_login
-from .models import User, QuestProgress
+from .models import User, QuestProgress, Subscription
 from .serializers import UserSerializer, LoginSerializer, QuestProgressSerializer
+from . import stripe_service
 
 
 @api_view(['POST'])
@@ -571,4 +572,72 @@ def password_reset_confirm_view(request):
     return Response({
         'message': 'Password has been reset successfully. You can now login with your new password.'
     }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def subscription_status_view(request):
+    """Get current subscription status"""
+    try:
+        subscription = Subscription.objects.get(user=request.user)
+        return Response({
+            'tier': subscription.tier,
+            'billing_interval': subscription.billing_interval,
+            'status': subscription.status,
+            'is_premium': subscription.is_premium,
+            'current_period_end': subscription.current_period_end.isoformat() if subscription.current_period_end else None,
+        })
+    except Subscription.DoesNotExist:
+        return Response({
+            'tier': 'free',
+            'billing_interval': None,
+            'status': 'active',
+            'is_premium': False,
+            'current_period_end': None,
+        })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_checkout_view(request):
+    """Create Stripe checkout session for subscription"""
+    billing_interval = request.data.get('billing_interval', 'monthly')
+    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+    success_url = f"{frontend_url}/settings?subscription=success"
+    cancel_url = f"{frontend_url}/pricing"
+
+    try:
+        checkout_url = stripe_service.create_checkout_session(
+            user=request.user,
+            billing_interval=billing_interval,
+            success_url=success_url,
+            cancel_url=cancel_url
+        )
+        return Response({'checkout_url': checkout_url})
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def cancel_subscription_view(request):
+    """Cancel user subscription"""
+    success = stripe_service.cancel_subscription(request.user)
+    if success:
+        return Response({'message': 'Subscription cancelled successfully'})
+    return Response({'error': 'No active subscription found'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def stripe_webhook_view(request):
+    """Handle Stripe webhook events"""
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE', '')
+
+    try:
+        event_type = stripe_service.handle_webhook_event(payload, sig_header)
+        return Response({'status': 'success', 'event': event_type})
+    except ValueError as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
