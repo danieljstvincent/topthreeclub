@@ -67,11 +67,11 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://fonts.googleapis.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://fonts.googleapis.com" + (isProduction ? "" : " https://vercel.live"),
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: https:",
-              "connect-src 'self' " + apiUrl,
+              "connect-src 'self' " + apiUrl + (isProduction ? "" : " https://vercel.live wss://ws-us3.pusher.com"),
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
