@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block head_title %}Authentication Error - 3 Top Three Club{% endblock %}
+
+{% block content %}
+<div class="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+        <!-- Logo/Branding -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">3</h1>
+            <p class="text-lg text-gray-600">Top Three Club</p>
+        </div>
+
+        <div class="card p-8">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-3xl">⚠️</span>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">
+                    {% trans "Authentication Error" %}
+                </h2>
+                <p class="text-gray-600">
+                    {% trans "An error occurred while trying to authenticate." %}
+                </p>
+            </div>
+
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p class="text-red-800 text-sm">
+                    {{ error }}
+                </p>
+            </div>
+
+            <div class="space-y-3">
+                <a href="/login" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md text-center">
+                    Try Again
+                </a>
+                <a href="/" class="block w-full text-center text-sm text-gray-600 hover:text-gray-900">
+                    Go to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
