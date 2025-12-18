@@ -17,7 +17,7 @@ from django.conf import settings
 from datetime import date, timedelta, datetime
 from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.providers.google.views import oauth2_login
-from allauth.socialaccount.providers.facebook.views import oauth2_login as fb_oauth2_login
+# from allauth.socialaccount.providers.facebook.views import oauth2_login as fb_oauth2_login  # Facebook login disabled
 from .models import User, QuestProgress, Subscription
 from .serializers import UserSerializer, LoginSerializer, QuestProgressSerializer
 from . import stripe_service
@@ -143,7 +143,7 @@ def social_auth_urls_view(request):
         
         return Response({
             'google': f"{base_url}/accounts/google/login/",
-            'facebook': f"{base_url}/accounts/facebook/login/",
+            # 'facebook': f"{base_url}/accounts/facebook/login/",  # Facebook login disabled
         })
     except Exception as e:
         # Fallback to localhost if everything fails
@@ -153,7 +153,7 @@ def social_auth_urls_view(request):
         base_url = os.environ.get('BACKEND_URL', 'http://localhost:8000')
         return Response({
             'google': f"{base_url}/accounts/google/login/",
-            'facebook': f"{base_url}/accounts/facebook/login/",
+            # 'facebook': f"{base_url}/accounts/facebook/login/",  # Facebook login disabled
         })
 
 
