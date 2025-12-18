@@ -172,6 +172,7 @@ SOCIALACCOUNT_STORE_TOKENS = True
 # Redirect after social login
 LOGIN_REDIRECT_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000') + '/auth-callback'
 ACCOUNT_LOGOUT_REDIRECT_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+ACCOUNT_ADAPTER = 'apps.users.adapters.AccountAdapter'
 SOCIALACCOUNT_ADAPTER = 'apps.users.adapters.SocialAccountAdapter'
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
