@@ -22,7 +22,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.facebook',
+    # 'allauth.socialaccount.providers.facebook',  # Facebook login disabled
     'apps.users',
 ]
 
@@ -129,9 +129,22 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://accounts.google.com",
+    # "https://www.facebook.com",  # Facebook login disabled
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 # Session settings - keep users logged in
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days
@@ -157,11 +170,14 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_STORE_TOKENS = True
 
 # Redirect after social login
 LOGIN_REDIRECT_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000') + '/auth-callback'
 ACCOUNT_LOGOUT_REDIRECT_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+ACCOUNT_ADAPTER = 'apps.users.adapters.AccountAdapter'
 SOCIALACCOUNT_ADAPTER = 'apps.users.adapters.SocialAccountAdapter'
+SOCIALACCOUNT_LOGIN_ON_GET = True
 
 # Social Auth Providers
 SOCIALACCOUNT_PROVIDERS = {
@@ -179,27 +195,29 @@ SOCIALACCOUNT_PROVIDERS = {
             'key': ''
         }
     },
-    'facebook': {
-        'METHOD': 'oauth2',
-        'SCOPE': ['email', 'public_profile'],
-        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
-        'INIT_PARAMS': {'cookie': True},
-        'FIELDS': [
-            'id',
-            'email',
-            'name',
-            'first_name',
-            'last_name',
-        ],
-        'EXCHANGE_TOKEN': True,
-        'LOCALE_FUNC': lambda request: 'en',
-        'VERIFIED_EMAIL': False,
-        'VERSION': 'v21.0',  # Changed from v13.0
-        'APP': {
-            'client_id': os.environ.get('FACEBOOK_APP_ID', ''),
-            'secret': os.environ.get('FACEBOOK_APP_SECRET', ''),
-        }
-    }
+    # Facebook login disabled - code kept for potential future use
+    # Updated to v21.0 from main branch but kept disabled
+    # 'facebook': {
+    #     'METHOD': 'oauth2',
+    #     'SCOPE': ['email', 'public_profile'],
+    #     'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+    #     'INIT_PARAMS': {'cookie': True},
+    #     'FIELDS': [
+    #         'id',
+    #         'email',
+    #         'name',
+    #         'first_name',
+    #         'last_name',
+    #     ],
+    #     'EXCHANGE_TOKEN': True,
+    #     'LOCALE_FUNC': lambda request: 'en',
+    #     'VERIFIED_EMAIL': False,
+    #     'VERSION': 'v21.0',
+    #     'APP': {
+    #         'client_id': os.environ.get('FACEBOOK_APP_ID', ''),
+    #         'secret': os.environ.get('FACEBOOK_APP_SECRET', ''),
+    #     }
+    # }
 }
 
 # Security Settings for Production

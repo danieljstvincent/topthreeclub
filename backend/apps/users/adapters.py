@@ -84,6 +84,14 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
         """Redirect after social login"""
         return settings.LOGIN_REDIRECT_URL
     
+    def authentication_error(self, request, provider_id, error=None, exception=None, extra_context=None):
+        """Handle authentication errors"""
+        # Log the error but don't raise - let allauth handle it
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"OAuth authentication error for {provider_id}: {error}")
+        return super().authentication_error(request, provider_id, error, exception, extra_context)
+    
     def is_auto_signup_allowed(self, request, sociallogin):
         """Allow automatic signup for social accounts"""
         return True

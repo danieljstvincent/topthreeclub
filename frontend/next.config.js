@@ -67,14 +67,15 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://fonts.googleapis.com" + (isProduction ? "" : " https://vercel.live"),
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com" + (isProduction ? "" : " https://vercel.live"),  // https://connect.facebook.net removed - Facebook login disabled
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com",
               "font-src 'self' https://fonts.gstatic.com data:",
-              "img-src 'self' data: https:",
-              "connect-src 'self' " + apiUrl + (isProduction ? "" : " https://vercel.live wss://ws-us3.pusher.com"),
+              "img-src 'self' data: https: https://accounts.google.com",  // https://*.facebook.com https://*.fbcdn.net removed - Facebook login disabled
+              "connect-src 'self' " + apiUrl + " https://accounts.google.com" + (isProduction ? "" : " https://vercel.live wss://ws-us3.pusher.com"),  // https://www.facebook.com https://graph.facebook.com removed - Facebook login disabled
+              "frame-src 'self' https://accounts.google.com",  // https://www.facebook.com removed - Facebook login disabled
               "frame-ancestors 'none'",
               "base-uri 'self'",
-              "form-action 'self'",
+              "form-action 'self' https://accounts.google.com " + apiUrl,  // https://www.facebook.com removed - Facebook login disabled
             ].join('; '),
           },
         ],
