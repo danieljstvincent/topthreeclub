@@ -151,6 +151,9 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
+# Add this to ensure cookies work across the OAuth redirect
+SESSION_COOKIE_DOMAIN = None  # Let Django handle it automatically
+SESSION_SAVE_EVERY_REQUEST = True  # Helps maintain session during OAuth
 
 # Django Allauth settings
 SITE_ID = 1
@@ -193,6 +196,7 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     },
     # Facebook login disabled - code kept for potential future use
+    # Updated to v21.0 from main branch but kept disabled
     # 'facebook': {
     #     'METHOD': 'oauth2',
     #     'SCOPE': ['email', 'public_profile'],
@@ -208,7 +212,7 @@ SOCIALACCOUNT_PROVIDERS = {
     #     'EXCHANGE_TOKEN': True,
     #     'LOCALE_FUNC': lambda request: 'en',
     #     'VERIFIED_EMAIL': False,
-    #     'VERSION': 'v13.0',
+    #     'VERSION': 'v21.0',
     #     'APP': {
     #         'client_id': os.environ.get('FACEBOOK_APP_ID', ''),
     #         'secret': os.environ.get('FACEBOOK_APP_SECRET', ''),
