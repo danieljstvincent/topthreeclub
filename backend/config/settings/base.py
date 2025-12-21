@@ -6,7 +6,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-in-production')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# ALLOWED_HOSTS - includes production domains by default
+default_hosts = 'localhost,127.0.0.1,www.topthree.club,topthree.club'
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', default_hosts).split(',')
+# Remove empty strings from split
+ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -130,7 +134,15 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://accounts.google.com",
+    "https://www.topthree.club",
+    "https://topthree.club",
     # "https://www.facebook.com",  # Facebook login disabled
+]
+
+# Allow Vercel preview and production deployments
+# This regex matches any *.vercel.app subdomain
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -234,6 +246,30 @@ STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 STRIPE_PREMIUM_MONTHLY_PRICE_ID = os.environ.get('STRIPE_PREMIUM_MONTHLY_PRICE_ID', '')
 STRIPE_PREMIUM_YEARLY_PRICE_ID = os.environ.get('STRIPE_PREMIUM_YEARLY_PRICE_ID', '')
+
+# Email Configuration
+# For production, configure SMTP settings via environment variables:
+# EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+# EMAIL_HOST=smtp.your-provider.com
+# EMAIL_PORT=587
+# EMAIL_USE_TLS=True
+# EMAIL_HOST_USER=your-email@topthree.club
+# EMAIL_HOST_PASSWORD=your-password
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'localhost')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False') == 'True'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@topthree.club')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# If using console backend in production, log a warning
+if not DEBUG and EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.warning("Using console email backend in production! Configure SMTP settings for password reset emails to work.")
 
 # Logging Configuration
 LOGGING = {

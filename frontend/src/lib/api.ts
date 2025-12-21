@@ -1,5 +1,11 @@
 // API client for making requests to the backend
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// In production, NEXT_PUBLIC_API_URL must be set in Vercel environment variables
+// For production, this should be your backend API URL (e.g., https://api.topthree.club)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || (
+  typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+    ? `https://api.${window.location.hostname.replace('www.', '')}` // Auto-detect API URL in production
+    : 'http://localhost:8000' // Default for local development
+);
 
 interface ApiResponse<T> {
   data?: T;
@@ -182,12 +188,18 @@ class ApiClient {
 
   // Password reset methods
   async requestPasswordReset(emailOrUsername: string): Promise<ApiResponse<any>> {
+    const isEmail = emailOrUsername.includes('@');
+    const body: { email?: string; username?: string } = {};
+    
+    if (isEmail) {
+      body.email = emailOrUsername;
+    } else {
+      body.username = emailOrUsername;
+    }
+    
     return this.request('/api/users/password-reset/', {
       method: 'POST',
-      body: JSON.stringify({ 
-        email: emailOrUsername.includes('@') ? emailOrUsername : undefined,
-        username: emailOrUsername.includes('@') ? undefined : emailOrUsername,
-      }),
+      body: JSON.stringify(body),
     });
   }
 
