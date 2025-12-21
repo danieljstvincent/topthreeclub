@@ -1,0 +1,6 @@
+# Base requirements
+-r backend/requirements/base.txt
+
+# Production requirements
+-r backend/requirements/production.txt
+

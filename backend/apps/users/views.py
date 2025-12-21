@@ -480,7 +480,8 @@ def password_reset_request_view(request):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     
     # Build reset URL
-    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+    # Use settings.FRONTEND_URL if available, otherwise fallback to env var
+    frontend_url = getattr(settings, 'FRONTEND_URL', None) or os.environ.get('FRONTEND_URL', 'http://localhost:3000')
     reset_url = f"{frontend_url}/reset-password?uid={uid}&token={token}"
     
     # Send email (in production, configure email backend)

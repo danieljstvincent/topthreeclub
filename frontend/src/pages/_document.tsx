@@ -45,8 +45,10 @@ export default function Document() {
         {/* Theme color for mobile browsers */}
         <meta name="theme-color" content="#6366f1" />
 
+        {/* Font optimization - preconnect early for DNS resolution */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Load fonts with display=swap for better performance - prevents render blocking */}
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
           rel="stylesheet"
