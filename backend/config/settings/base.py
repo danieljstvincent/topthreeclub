@@ -73,15 +73,17 @@ if DB_ENGINE == 'sqlite':
         }
     }
 else:
-    # PostgreSQL (default) - works with Supabase
+    # PostgreSQL (default) - works with Supabase, Railway, and other providers
+    # Railway uses PGDATABASE, PGUSER, PGPASSWORD, PGHOST, PGPORT
+    # We support both naming conventions for flexibility
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'postgres'),
-            'USER': os.environ.get('DB_USER', 'postgres'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-            'HOST': os.environ.get('DB_HOST', 'db'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
+            'NAME': os.environ.get('DB_NAME') or os.environ.get('PGDATABASE', 'postgres'),
+            'USER': os.environ.get('DB_USER') or os.environ.get('PGUSER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD') or os.environ.get('PGPASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST') or os.environ.get('PGHOST', 'db'),
+            'PORT': os.environ.get('DB_PORT') or os.environ.get('PGPORT', '5432'),
         }
     }
 
