@@ -3,3 +3,4 @@
 # Production-specific packages
 gunicorn>=21.2.0
 whitenoise>=6.8.2
+dj-database-url>=2.2.0
