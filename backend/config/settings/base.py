@@ -73,19 +73,31 @@ if DB_ENGINE == 'sqlite':
         }
     }
 else:
-    # PostgreSQL (default) - works with Supabase, Railway, and other providers
-    # Railway uses PGDATABASE, PGUSER, PGPASSWORD, PGHOST, PGPORT
-    # We support both naming conventions for flexibility
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME') or os.environ.get('PGDATABASE', 'postgres'),
-            'USER': os.environ.get('DB_USER') or os.environ.get('PGUSER', 'postgres'),
-            'PASSWORD': os.environ.get('DB_PASSWORD') or os.environ.get('PGPASSWORD', ''),
-            'HOST': os.environ.get('DB_HOST') or os.environ.get('PGHOST', 'db'),
-            'PORT': os.environ.get('DB_PORT') or os.environ.get('PGPORT', '5432'),
+    # PostgreSQL - supports both DATABASE_URL (Render, Heroku) and individual vars
+    import dj_database_url
+
+    # Try DATABASE_URL first (Render, Heroku format: postgresql://user:pass@host:port/dbname)
+    if 'DATABASE_URL' in os.environ:
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=os.environ['DATABASE_URL'],
+                conn_max_age=600,
+                conn_health_checks=True,
+            )
         }
-    }
+    else:
+        # Fallback to individual variables (Railway, custom setups)
+        # Supports both DB_* and PG* naming conventions
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.environ.get('DB_NAME') or os.environ.get('PGDATABASE', 'postgres'),
+                'USER': os.environ.get('DB_USER') or os.environ.get('PGUSER', 'postgres'),
+                'PASSWORD': os.environ.get('DB_PASSWORD') or os.environ.get('PGPASSWORD', ''),
+                'HOST': os.environ.get('DB_HOST') or os.environ.get('PGHOST', 'localhost'),
+                'PORT': os.environ.get('DB_PORT') or os.environ.get('PGPORT', '5432'),
+            }
+        }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
