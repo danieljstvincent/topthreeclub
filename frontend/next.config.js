@@ -37,6 +37,9 @@ const nextConfig = {
       process.env.NEXT_PUBLIC_API_URL ||
       'https://www.topthree.club';
 
+    // Check if running on Vercel
+    const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_URL;
+
     return [
       /**
        * App pages ONLY (exclude Next internals)
@@ -60,12 +63,12 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com" + (isVercel ? " https://vercel.live" : ""),
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https:",
-              "connect-src 'self' " + apiUrl + " https://accounts.google.com",
-              "frame-src https://accounts.google.com",
+              "connect-src 'self' " + apiUrl + " https://accounts.google.com" + (isVercel ? " https://vercel.live wss://ws-us3.pusher.com wss://ws-us4.pusher.com" : ""),
+              "frame-src https://accounts.google.com" + (isVercel ? " https://vercel.live" : ""),
             ].join('; '),
           },
         ],
