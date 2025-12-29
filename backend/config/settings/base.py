@@ -12,6 +12,10 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', default_hosts).split(',')
 # Remove empty strings from split
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
 
+# Proxy settings - needed for Vercel proxy
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
