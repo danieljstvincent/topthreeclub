@@ -1,9 +1,9 @@
 // API client for making requests to the backend
-// In production, NEXT_PUBLIC_API_URL must be set in Vercel environment variables
-// For production, this should be your backend API URL (e.g., https://api.topthree.club)
+// In production, NEXT_PUBLIC_API_URL should be set in Vercel environment variables
+// For production with backend on same domain, set to: https://www.topthree.club
 const API_URL = process.env.NEXT_PUBLIC_API_URL || (
   typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
-    ? `https://api.${window.location.hostname.replace('www.', '')}` // Auto-detect API URL in production
+    ? `https://${window.location.hostname}` // Use same domain in production
     : 'http://localhost:8000' // Default for local development
 );
 
