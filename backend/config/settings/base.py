@@ -164,6 +164,14 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -184,6 +192,20 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 # Add this to ensure cookies work across the OAuth redirect
 SESSION_COOKIE_DOMAIN = None  # Let Django handle it automatically
 SESSION_SAVE_EVERY_REQUEST = True  # Helps maintain session during OAuth
+
+# CSRF trusted origins for cross-domain requests
+CSRF_TRUSTED_ORIGINS = [
+    'https://www.topthree.club',
+    'https://topthree.club',
+]
+# Add Vercel preview deployments
+import re
+if os.environ.get('VERCEL_URL'):
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ.get('VERCEL_URL')}")
+# Also trust all vercel.app domains via pattern
+CSRF_TRUSTED_ORIGINS.extend([
+    'https://topthreeclub.vercel.app',
+])
 
 # Django Allauth settings
 SITE_ID = 1

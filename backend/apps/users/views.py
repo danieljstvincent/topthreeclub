@@ -86,7 +86,7 @@ def logout_view(request):
     return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'OPTIONS'])
 @permission_classes([IsAuthenticated])
 def current_user_view(request):
     """Get current authenticated user"""
@@ -94,7 +94,7 @@ def current_user_view(request):
     return Response(serializer.data)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'OPTIONS'])
 @permission_classes([AllowAny])
 def social_auth_urls_view(request):
     """Get social authentication URLs"""
