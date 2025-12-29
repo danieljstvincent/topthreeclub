@@ -16,7 +16,8 @@ if SECRET_KEY == 'django-insecure-change-me-in-production':
     raise ValueError("SECRET_KEY must be set in production environment")
 
 # Security: HTTPS settings
-SECURE_SSL_REDIRECT = True
+# Allow environment variable override for proxy setups (Vercel, etc)
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
