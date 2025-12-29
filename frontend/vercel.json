@@ -4,20 +4,5 @@
       "source": "/api/:path*",
       "destination": "https://topthreeclub.onrender.com/api/:path*"
     }
-  ],
-  "headers": [
-    {
-      "source": "/api/:path*",
-      "headers": [
-        {
-          "key": "X-Forwarded-Proto",
-          "value": "https"
-        },
-        {
-          "key": "X-Forwarded-Host",
-          "value": "www.topthree.club"
-        }
-      ]
-    }
   ]
 }
