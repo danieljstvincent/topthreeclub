@@ -2,7 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  
+  trailingSlash: false, // Prevent Next.js from redirecting trailing slashes
+
   // Performance optimizations
   compress: true, // Enable gzip compression
   poweredByHeader: false, // Remove X-Powered-By header
