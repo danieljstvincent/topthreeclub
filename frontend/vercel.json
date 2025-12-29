@@ -1,9 +1,0 @@
-{
-  "trailingSlash": false,
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://topthreeclub.onrender.com/api/:path*"
-    }
-  ]
-}
