@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  trailingSlash: true, // Ensure trailing slashes are preserved for Django API compatibility
 
   // Performance optimizations
   compress: true, // Enable gzip compression
