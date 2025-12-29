@@ -58,16 +58,10 @@ CORS_ALLOW_HEADERS = [
 if DB_ENGINE == 'sqlite':
     raise ValueError("SQLite is not allowed in production. Use PostgreSQL.")
 
-# Logging: More detailed in production
-LOGGING['handlers']['file'] = {
-    'class': 'logging.handlers.RotatingFileHandler',
-    'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
-    'maxBytes': 1024 * 1024 * 5,  # 5 MB
-    'backupCount': 5,
-    'formatter': 'verbose',
-}
-LOGGING['root']['handlers'] = ['console', 'file']
-LOGGING['loggers']['django']['handlers'] = ['console', 'file']
+# Logging: Use console logging in production (Render captures stdout/stderr)
+# File logging disabled - Render provides built-in log aggregation
+LOGGING['root']['handlers'] = ['console']
+LOGGING['loggers']['django']['handlers'] = ['console']
 
 
 
