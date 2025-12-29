@@ -106,7 +106,7 @@ const nextConfig = {
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: https: https://accounts.google.com",  // https://*.facebook.com https://*.fbcdn.net removed - Facebook login disabled
               "connect-src 'self' " + apiUrl + " https://accounts.google.com" + vercelLiveConnect,  // https://www.facebook.com https://graph.facebook.com removed - Facebook login disabled
-              "frame-src 'self' https://accounts.google.com",  // https://www.facebook.com removed - Facebook login disabled
+              "frame-src 'self' https://accounts.google.com" + (isVercel ? " https://vercel.live" : ""),  // https://www.facebook.com removed - Facebook login disabled
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self' https://accounts.google.com " + apiUrl,  // https://www.facebook.com removed - Facebook login disabled

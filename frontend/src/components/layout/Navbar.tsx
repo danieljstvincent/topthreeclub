@@ -16,6 +16,8 @@ export default function Navbar({ user, isAuthenticated, onLogout }: NavbarProps)
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
+    // Set initial scroll state on mount to prevent hydration mismatch
+    handleScroll();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
