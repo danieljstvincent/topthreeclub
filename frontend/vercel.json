@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://topthreeclub-backend.onrender.com/api/:path*"
+      "destination": "https://topthreeclub.onrender.com/api/:path*"
     }
   ]
 }
