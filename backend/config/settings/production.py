@@ -33,6 +33,11 @@ CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 
+# Cookie domain for Vercel proxy setup
+# Use .topthree.club to work with both www.topthree.club and topthree.club
+SESSION_COOKIE_DOMAIN = '.topthree.club'
+CSRF_COOKIE_DOMAIN = '.topthree.club'
+
 # Security: Additional headers
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
