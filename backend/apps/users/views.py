@@ -142,8 +142,8 @@ def social_auth_urls_view(request):
                 base_url = os.environ.get('BACKEND_URL', 'http://localhost:8000')
         
         return Response({
-            'google': f"{base_url}/accounts/google/login/",
-            # 'facebook': f"{base_url}/accounts/facebook/login/",  # Facebook login disabled
+            'google': f"{base_url}/accounts/google/login",
+            # 'facebook': f"{base_url}/accounts/facebook/login",  # Facebook login disabled
         })
     except Exception as e:
         # Fallback to localhost if everything fails
@@ -152,8 +152,8 @@ def social_auth_urls_view(request):
         logger.warning(f"Failed to generate social auth URLs: {e}, using localhost fallback")
         base_url = os.environ.get('BACKEND_URL', 'http://localhost:8000')
         return Response({
-            'google': f"{base_url}/accounts/google/login/",
-            # 'facebook': f"{base_url}/accounts/facebook/login/",  # Facebook login disabled
+            'google': f"{base_url}/accounts/google/login",
+            # 'facebook': f"{base_url}/accounts/facebook/login",  # Facebook login disabled
         })
 
 
