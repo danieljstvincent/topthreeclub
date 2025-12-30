@@ -3,48 +3,25 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
 
-  /**
-   * CRITICAL:
-   * Skip trailing slash redirects entirely to prevent loops with Django
-   * Django expects trailing slashes (APPEND_SLASH=True), so we pass through as-is
-   */
-  skipTrailingSlashRedirect: true,
+  // Performance optimizations
+  compress: true,
+  poweredByHeader: false,
 
-  /**
-   * Public env vars
-   */
-  env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  // Image optimization
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
   /**
-   * Rewrites API calls to Django backend on Render
-   */
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'https://topthreeclub.onrender.com/api/:path*',
-      },
-    ];
-  },
-
-  /**
-   * Headers
-   * ⚠️ DO NOT apply security headers to _next/*
+   * Headers - Security and CSP
    */
   async headers() {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ||
-      'https://www.topthree.club';
-
     // Check if running on Vercel
     const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_URL;
 
     return [
-      /**
-       * App pages ONLY (exclude Next internals)
-       */
       {
         source: '/((?!_next/|favicon.ico).*)',
         headers: [
@@ -66,37 +43,37 @@ const nextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com" + (isVercel ? " https://vercel.live" : ""),
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: https:",
-              "connect-src 'self' " + apiUrl + " https://accounts.google.com" + (isVercel ? " https://vercel.live wss://ws-us3.pusher.com wss://ws-us4.pusher.com" : ""),
-              "frame-src https://accounts.google.com" + (isVercel ? " https://vercel.live" : ""),
+              "font-src 'self' https://fonts.gstatic.com data:",
+              "img-src 'self' data: https: https://accounts.google.com",
+              "connect-src 'self' https://topthreeclub.onrender.com https://accounts.google.com" + (isVercel ? " https://vercel.live wss://ws-us3.pusher.com wss://ws-us4.pusher.com" : ""),
+              "frame-src 'self' https://accounts.google.com" + (isVercel ? " https://vercel.live" : ""),
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self' https://accounts.google.com https://topthreeclub.onrender.com",
             ].join('; '),
           },
-        ],
-      },
-
-      /**
-       * Next.js static assets (NO CSP / NO nosniff)
-       */
-      {
-        source: '/_next/static/:path*',
-        headers: [
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-
-      /**
-       * API routes (no cache)
-       */
-      {
-        source: '/api/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-store',
+            key: 'Permissions-Policy',
+            value: [
+              'accelerometer=()',
+              'autoplay=()',
+              'camera=()',
+              'display-capture=()',
+              'encrypted-media=()',
+              'fullscreen=()',
+              'geolocation=()',
+              'gyroscope=()',
+              'magnetometer=()',
+              'microphone=()',
+              'midi=()',
+              'payment=()',
+              'picture-in-picture=()',
+              'publickey-credentials-get=()',
+              'screen-wake-lock=()',
+              'sync-xhr=()',
+              'usb=()',
+              'xr-spatial-tracking=()',
+            ].join(', '),
           },
         ],
       },

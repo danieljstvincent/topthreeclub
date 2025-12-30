@@ -1,10 +1,9 @@
 // API client for making requests to the backend
-// In production, NEXT_PUBLIC_API_URL should be set to: https://www.topthree.club
-// This uses same-origin requests which are proxied by Vercel to the Django backend
+// Calls Django backend directly on Render with CORS
 const API_URL = process.env.NEXT_PUBLIC_API_URL || (
   typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
-    ? `https://${window.location.hostname}` // Use same domain in production
-    : 'http://localhost:8000' // Default for local development
+    ? 'https://topthreeclub.onrender.com' // Production backend on Render
+    : 'http://localhost:8000' // Local development
 );
 
 interface ApiResponse<T> {
