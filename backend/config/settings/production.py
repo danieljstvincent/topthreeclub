@@ -24,19 +24,23 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get('SECURE_HSTS_INCLUDE_SUBDOMAINS'
 SECURE_HSTS_PRELOAD = os.environ.get('SECURE_HSTS_PRELOAD', 'False') == 'True'
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Security: Cookie settings
-# Temporarily relaxed for proxy debugging
-SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False') == 'True'
-CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False') == 'True'
-SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SAMESITE = 'Lax'
+# Security: Cookie settings for Vercel proxy
+# IMPORTANT: Secure=True requires HTTPS, which Vercel provides
+SESSION_COOKIE_SECURE = True  # Only send over HTTPS
+CSRF_COOKIE_SECURE = True     # Only send over HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
+CSRF_COOKIE_HTTPONLY = True     # Prevent JavaScript access
+SESSION_COOKIE_SAMESITE = 'Lax' # Protect against CSRF
+CSRF_COOKIE_SAMESITE = 'Lax'    # Protect against CSRF
 
 # Cookie domain for Vercel proxy setup
 # Use .topthree.club to work with both www.topthree.club and topthree.club
 SESSION_COOKIE_DOMAIN = '.topthree.club'
 CSRF_COOKIE_DOMAIN = '.topthree.club'
+
+# Cookie paths (inherited from base.py, but explicit here for clarity)
+SESSION_COOKIE_PATH = '/'
+CSRF_COOKIE_PATH = '/'
 
 # Security: Additional headers
 SECURE_CONTENT_TYPE_NOSNIFF = True

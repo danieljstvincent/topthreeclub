@@ -189,8 +189,9 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
-# Add this to ensure cookies work across the OAuth redirect
-SESSION_COOKIE_DOMAIN = None  # Let Django handle it automatically
+SESSION_COOKIE_PATH = '/'  # Ensure cookies work for all paths
+CSRF_COOKIE_PATH = '/'
+# SESSION_COOKIE_DOMAIN set in production.py for Vercel proxy
 SESSION_SAVE_EVERY_REQUEST = True  # Helps maintain session during OAuth
 
 # CSRF trusted origins for cross-domain requests
