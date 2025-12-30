@@ -1,27 +1,16 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path((?:[^/]+/)*[^/]+/?)",
-      "destination": "https://topthreeclub.onrender.com/api/:path"
-    },
-    {
-      "source": "/accounts/:path((?:[^/]+/)*[^/]+/?)",
-      "destination": "https://topthreeclub.onrender.com/accounts/:path"
-    },
-    {
-      "source": "/admin/:path((?:[^/]+/)*[^/]+/?)",
-      "destination": "https://topthreeclub.onrender.com/admin/:path"
-    }
-  ],
-  "headers": [
-    {
       "source": "/api/:path*",
-      "headers": [
-        {
-          "key": "X-Vercel-Skip-Trailing-Slash-Redirect",
-          "value": "1"
-        }
-      ]
+      "destination": "https://topthreeclub.onrender.com/api/:path*"
+    },
+    {
+      "source": "/accounts/:path*",
+      "destination": "https://topthreeclub.onrender.com/accounts/:path*"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "https://topthreeclub.onrender.com/admin/:path*"
     }
   ]
 }
