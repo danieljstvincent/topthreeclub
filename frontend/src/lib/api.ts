@@ -71,7 +71,7 @@ class ApiClient {
   }
 
   async login(username: string, password: string): Promise<ApiResponse<any>> {
-    return this.request('/api/users/login/', {
+    return this.request('/api/users/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     });
@@ -83,18 +83,18 @@ class ApiClient {
     password: string,
     password2: string
   ): Promise<ApiResponse<any>> {
-    return this.request('/api/users/register/', {
+    return this.request('/api/users/register', {
       method: 'POST',
       body: JSON.stringify({ username, email, password, password2 }),
     });
   }
 
   async getCurrentUser(): Promise<ApiResponse<any>> {
-    return this.request('/api/users/me/');
+    return this.request('/api/users/me');
   }
 
   async logout(): Promise<ApiResponse<any>> {
-    return this.request('/api/users/logout/', {
+    return this.request('/api/users/logout', {
       method: 'POST',
     });
   }
@@ -103,49 +103,49 @@ class ApiClient {
     password: string,
     confirmation: string
   ): Promise<ApiResponse<any>> {
-    return this.request('/api/users/account/delete/', {
+    return this.request('/api/users/account/delete', {
       method: 'POST',
       body: JSON.stringify({ password, confirmation }),
     });
   }
 
   async getSocialAuthUrls(): Promise<ApiResponse<{ google?: string; facebook?: string }>> {
-    return this.request('/api/users/social-auth-urls/');
+    return this.request('/api/users/social-auth-urls');
   }
 
   async getTodayQuest(): Promise<ApiResponse<any>> {
-    return this.request('/api/users/quests/today/');
+    return this.request('/api/users/quests/today');
   }
 
   async saveTodayQuest(data: any): Promise<ApiResponse<any>> {
-    return this.request('/api/users/quests/today/', {
+    return this.request('/api/users/quests/today', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async submitQuest(): Promise<ApiResponse<any>> {
-    return this.request('/api/users/quests/submit/', {
+    return this.request('/api/users/quests/submit', {
       method: 'POST',
     });
   }
 
   async lockChoices(): Promise<ApiResponse<any>> {
-    return this.request('/api/users/quests/lock-choices/', {
+    return this.request('/api/users/quests/lock-choices', {
       method: 'POST',
     });
   }
 
   async getQuestHistory(): Promise<ApiResponse<any>> {
-    return this.request('/api/users/quests/history/');
+    return this.request('/api/users/quests/history');
   }
 
   async getQuestStats(): Promise<ApiResponse<any>> {
-    return this.request('/api/users/quests/stats/');
+    return this.request('/api/users/quests/stats');
   }
 
   async bulkSyncQuests(data: any[]): Promise<ApiResponse<any>> {
-    return this.request('/api/users/quests/bulk-sync/', {
+    return this.request('/api/users/quests/bulk-sync', {
       method: 'POST',
       body: JSON.stringify({ quests: data }),
     });
@@ -158,7 +158,7 @@ class ApiClient {
   }
 
   async createBrainDumpIdea(text: string): Promise<ApiResponse<BrainDumpIdea>> {
-    return this.request('/api/users/brain-dump/', {
+    return this.request('/api/users/brain-dump', {
       method: 'POST',
       body: JSON.stringify({ text }),
     });
@@ -181,7 +181,7 @@ class ApiClient {
   }
 
   async getArchivedIdeas(): Promise<ApiResponse<BrainDumpIdea[]>> {
-    return this.request('/api/users/brain-dump/archived/');
+    return this.request('/api/users/brain-dump/archived');
   }
 
   // Password reset methods
@@ -195,7 +195,7 @@ class ApiClient {
       body.username = emailOrUsername;
     }
     
-    return this.request('/api/users/password-reset/', {
+    return this.request('/api/users/password-reset', {
       method: 'POST',
       body: JSON.stringify(body),
     });
@@ -207,7 +207,7 @@ class ApiClient {
     password: string,
     password2: string
   ): Promise<ApiResponse<any>> {
-    return this.request('/api/users/password-reset-confirm/', {
+    return this.request('/api/users/password-reset-confirm', {
       method: 'POST',
       body: JSON.stringify({ uid, token, password, password2 }),
     });

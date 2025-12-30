@@ -34,6 +34,9 @@ INSTALLED_APPS = [
     'apps.users',
 ]
 
+# Disable automatic trailing slash redirects to match Vercel's behavior
+APPEND_SLASH = False
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
