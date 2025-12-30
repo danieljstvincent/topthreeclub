@@ -45,11 +45,11 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: https: https://accounts.google.com",
-              "connect-src 'self' https://topthreeclub.onrender.com https://accounts.google.com" + (isVercel ? " https://vercel.live wss://ws-us3.pusher.com wss://ws-us4.pusher.com" : ""),
+              "connect-src 'self' https://accounts.google.com" + (isVercel ? " https://vercel.live wss://ws-us3.pusher.com wss://ws-us4.pusher.com" : ""),
               "frame-src 'self' https://accounts.google.com" + (isVercel ? " https://vercel.live" : ""),
               "frame-ancestors 'none'",
               "base-uri 'self'",
-              "form-action 'self' https://accounts.google.com https://topthreeclub.onrender.com",
+              "form-action 'self' https://accounts.google.com",
             ].join('; '),
           },
           {

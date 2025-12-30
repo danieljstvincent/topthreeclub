@@ -1,10 +1,9 @@
 // API client for making requests to the backend
-// Calls Django backend directly on Render with CORS
-const API_URL = process.env.NEXT_PUBLIC_API_URL || (
-  typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
-    ? 'https://topthreeclub.onrender.com' // Production backend on Render
-    : 'http://localhost:8000' // Local development
-);
+// In production: use same domain (Vercel proxies /api/* to Django backend via vercel.json)
+// In development: call Django directly on localhost
+const API_URL = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+  ? '' // Use same domain in production (relative URLs)
+  : 'http://localhost:8000'; // Local development
 
 interface ApiResponse<T> {
   data?: T;
