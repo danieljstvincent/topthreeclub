@@ -5,9 +5,10 @@ const nextConfig = {
 
   /**
    * CRITICAL:
-   * Must be FALSE to avoid redirect loops with Django + Vercel
+   * Skip trailing slash redirects entirely to prevent loops with Django
+   * Django expects trailing slashes (APPEND_SLASH=True), so we pass through as-is
    */
-  trailingSlash: false,
+  skipTrailingSlashRedirect: true,
 
   /**
    * Public env vars
