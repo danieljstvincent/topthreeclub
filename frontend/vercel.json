@@ -1,16 +1,16 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://topthreeclub.onrender.com/api/:path*"
+      "source": "/api/:path(.*)",
+      "destination": "https://topthreeclub.onrender.com/api/:path"
     },
     {
-      "source": "/accounts/:path*",
-      "destination": "https://topthreeclub.onrender.com/accounts/:path*"
+      "source": "/accounts/:path(.*)",
+      "destination": "https://topthreeclub.onrender.com/accounts/:path"
     },
     {
-      "source": "/admin/:path*",
-      "destination": "https://topthreeclub.onrender.com/admin/:path*"
+      "source": "/admin/:path(.*)",
+      "destination": "https://topthreeclub.onrender.com/admin/:path"
     }
   ]
 }
