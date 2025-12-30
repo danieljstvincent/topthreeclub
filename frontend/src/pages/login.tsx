@@ -10,7 +10,7 @@ export default function Login() {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true); // Default to checked
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [socialAuthUrls, setSocialAuthUrls] = useState<{ google?: string; facebook?: string }>({});
